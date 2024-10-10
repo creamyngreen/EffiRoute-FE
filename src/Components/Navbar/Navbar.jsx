@@ -7,11 +7,11 @@ return (
     <div className="container flex justify-between items-center">
 
     <div className="flex items-center ml-10">
-        <img src={Logo} alt="EffiRoute Logo" className="h-8 w-8 mr-2" /> 
-        <span className="text-[#56C074] font-bold text-xl font-sora">EffiRoute</span>
+        <img src={Logo} alt="EffiRoute Logo" className="h-10 w-auto mr-2 mb-5" /> 
+        <span className="text-[#56C074] font-bold text-2xl font-sora">EffiRoute</span>
     </div>
 
-    <div className="flex space-x-10 ml-auto"> 
+    <div className="flex space-x-20 ml-auto"> 
         <a href="/solution" className="text-gray-800 hover:text-[#3596FF] font-noto">Solution</a>
         <a href="#" className="text-gray-800 hover:text-[#3596FF] font-noto">Services</a>
         <a href="#" className="text-gray-800 hover:text-[#3596FF] font-noto">Why choose us</a>
