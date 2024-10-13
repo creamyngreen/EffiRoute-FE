@@ -13,6 +13,8 @@ export default {
         manrope: ['Manrope', 'sans-serif'],
         lato: ['Lato', 'sans-serif'],
         urbanist: ['Urbanist', 'sans-serif'],
+        roboto: ['Roboto', 'sans-serif'],
+        inter: ['Inter', 'sans-serif'],
       },
     },
   },
