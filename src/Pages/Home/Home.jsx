@@ -43,7 +43,7 @@ const Home = () => {
                         all-in-one route optimization platform.
                     </p>
                     <button
-                        style={{ width: '150px' }} 
+                        style={{ width: '10rem' }} 
                         className="mt-4 bg-[#FD7E14] text-white text-lg py-2 px-4 rounded font-bold font-quattrocento"
                     >
                         Start Free Trial
@@ -51,7 +51,7 @@ const Home = () => {
                 </div>
 
                 <div>
-                    <img src={HomePage} alt="Delivery Optimization" style={{width:'1000px', height:'570px',marginRight:'550px'}} className="" />
+                    <img src={HomePage} alt="Delivery Optimization" style={{width:'70rem', height:'35rem',marginRight:'550px'}} className="" />
                 </div>
             </div>
 
@@ -133,7 +133,7 @@ const Home = () => {
                 </p>
             </div>
 
-            <div className="flex justify-between items-start space-x-16 mt-12 px-16 mx-72">
+            <div className="flex justify-between items-start space-x-16 mt-12 px-16 mx-60">
                 <div className="w-1/3 h-80 p-6 rounded-[24px] bg-white"
                     style={{
                         border: '2px solid transparent',
@@ -188,7 +188,8 @@ const Home = () => {
                 </button>
             </div>
 
-            <div className="text-left mt-20 ml-96 p-5">
+        <div className="bg-[#F4F4F4]">
+            <div className=" bg-[#F4F4F4] text-left mt-20 ml-72 p-5">
                 <p id="services" className="text-[#FD7E14] font-black font-urbanist text-xl">
                     OUR SERVICES
                 </p>
@@ -200,7 +201,7 @@ const Home = () => {
 
             <div className="flex p-5 -mt-7">
                 {/* First section*/}
-                <div className="flex flex-col space-y-4 ml-96 mt-5">
+                <div className="flex flex-col space-y-4 ml-72 mt-5">
                     <h1 className="text-3xl font-bold font-lato text-[#FD7E14] pt-8">
                         Smart Route Optimization
                     </h1>
@@ -221,17 +222,17 @@ const Home = () => {
                 </div>
 
                 <div>
-                    <img src={Services1} alt="Services1" className="w-3/5 h-full mt-10 ml-52" />
+                    <img src={Services1} alt="Services1" style={{width:'37rem',height:'25rem', marginLeft:'5rem'}}className=" mt-10" />
                 </div>
             </div>
 
             <div className="flex p-5 mt-10">
                 {/* Second section*/}
-                <div className="ml-52">
-                    <img src={Services1} alt="Services1" className="w-2/4 h-full mt-10 ml-44" />
+                <div className="ml-72">
+                    <img src={Services1} alt="Services1" style={{width:'37rem',height:'25rem'}} className="mt-10" />
                 </div>
 
-                <div className="flex flex-col space-y-4 -ml-72 mt-5">
+                <div className="flex flex-col space-y-4 ml-20 mt-5">
                     <h1 className="text-3xl font-bold font-lato text-[#FD7E14] pt-8">
                         Real-Time Delivery Tracking
                     </h1>
@@ -254,7 +255,7 @@ const Home = () => {
 
             <div className="flex p-5 mt-10">
                 {/* Third section*/}
-                <div className="flex flex-col space-y-4 ml-96 mt-5">
+                <div className="flex flex-col space-y-4 ml-72 mt-5">
                     <h1 className="text-3xl font-bold font-lato text-[#FD7E14] pt-8">
                         Multi-Driver Management
                     </h1>
@@ -275,25 +276,25 @@ const Home = () => {
                 </div>
 
                 <div>
-                    <img src={Services1} alt="Services1" className="w-3/5 h-full mt-10 ml-52" />
+                    <img src={Services1} alt="Services1" style={{width:'37rem',height:'25rem',marginLeft:'5rem'}} className="mt-10" />
                 </div>
             </div>
-                
+        </div>
                 <div className="relative">
                     <p id="whychooseus" className="text-[#FD7E14] font-black font-urbanist text-2xl text-center mt-10">
                         WHY EFFIROUTE?
                     </p>
-                    <div className="flex justify-end items-center mt-10 mr-36">
+                    <div className="flex justify-end items-center mt-10 mr-60">
                         <img src={truck} alt="Truck Background" className="w-3/6 h-auto" />
                     </div>
-                    <div style ={{position:'absolute',top:'136px',left:'99px',height:'440px'}}className="px-14 pt-10 ml-96 bg-[#FD7E14] text-white rounded-t-lg rounded-l-lg w-96">
+                    <div style ={{position:'absolute',top:'8.5rem',left:'-5rem', height:'27rem'}}className="px-14 pt-10 ml-96 bg-[#FD7E14] text-white rounded-t-lg rounded-l-lg w-96">
                         <p className="text-4xl font-urbanist font-bold ">
                         From route optimization to real-time tracking, we provide everything you need to streamline your deliveries.
                         </p>
                     </div>
 
 
-                    <div className="absolute top-40 right-28 flex-col space-y-4">
+                    <div style={{position:'absolute', right:'18.2rem',top:'9.5rem' }}className="flex-col space-y-4">
                         <div className="flex items-center bg-[#2169B8] rounded-r-full w-7/12 h-auto p-2">
                             <img src={mapIcon} alt="Map Icon" className="w-10 h-10 mr-4" />
                             <div>
@@ -333,7 +334,7 @@ const Home = () => {
                 </div>
 
                 <div className="flex justify-center space-x-8 mt-10">
-                    <div className="group bg-white p-6 shadow-lg w-96 hover:bg-[#F1580C]">
+                    <div style={{width:'25rem   '}} className="group bg-white p-6 shadow-lg hover:bg-[#F1580C]">
             
                         <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center"> 
@@ -363,7 +364,7 @@ const Home = () => {
                         </div>
                     </div>
 
-                    <div className="group bg-white p-6 shadow-lg w-96 hover:bg-[#F1580C]">
+                    <div style={{width:'25rem'}} className="group bg-white p-6 shadow-lg hover:bg-[#F1580C]">
                         <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center">
                                 <img src={face2} alt="Elon Musk" className="w-16 h-16 rounded-full mr-4" />
@@ -392,13 +393,14 @@ const Home = () => {
                     </div>
                 </div>
 
+            <div className="bg-[#F4F4F4] mt-20">
                 {/* News */}
                 <div className="container mx-auto py-8">
                     <h2 id="news" className="text-3xl font-bold text-[#FD7E14] mb-6 ml-4">FEATURE NEWS</h2>
                     <div className="flex">
                         <div className="flex flex-col space-y-6 w-2/3 ">
                             {/* News Item 1 */}
-                            <div className="flex bg-white rounded-lg shadow-lg overflow-hidden">
+                            <div className="flex rounded-lg  overflow-hidden">
                                 <div className="w-3/6 p-4">
                                     <h3 className="text-lg text-[#272728] font-semibold font-lato">EffiRoute cung cấp dịch vụ gom hàng lẻ và chuyển hàng nguyên container</h3>
                                     <p className="text-gray-600 mt-2 font-lato">
@@ -409,7 +411,7 @@ const Home = () => {
                             </div>
                 
                             {/* News Item 2 */}
-                            <div className="flex bg-white rounded-lg shadow-lg overflow-hidden">
+                            <div className="flex rounded-lg overflow-hidden">
                                 <div className="w-3/6 p-4">
                                     <h3 className="text-lg font-semibold font-lato">EffiRoute cung cấp dịch vụ gom hàng lẻ và chuyển hàng nguyên container</h3>
                                     <p className="text-gray-600 mt-2 font-lato">
@@ -420,7 +422,7 @@ const Home = () => {
                             </div>
                 
                             {/* News Item 3 */}
-                            <div className="flex bg-white rounded-lg shadow-lg overflow-hidden">
+                            <div className="flex  rounded-lg overflow-hidden">
                                 <div className="w-3/6 p-4">
                                     <h3 className="text-lg font-semibold font-lato">EffiRoute cung cấp dịch vụ gom hàng lẻ và vận chuyển hàng nguyên container</h3>
                                     <p className="text-gray-600 mt-2 font-lato">
@@ -432,7 +434,7 @@ const Home = () => {
                         </div>
                 
                         {/* News Item 4*/}
-                        <div className="flex flex-col w-3/6 bg-white rounded-lg shadow-lg overflow-hidden">
+                        <div className="flex flex-col w-3/6  rounded-lg overflow-hidden">
                             <img src={new1} alt="Feature News 4" style={{height:'450px'}} className="w-full object-cover rounded-lg" />
                             <div className="p-4">
                                 <h3 className="text-lg font-semibold font-lato">EffiRoute cung cấp dịch vụ gom hàng lẻ và vận chuyển hàng nguyên container</h3>
@@ -465,6 +467,7 @@ const Home = () => {
                         </div>
                     </div>
                 </div>
+            </div>
 
                 <div id="pricing" className="text-center mt-10">
                     <p className="text-[#FD7E14] font-black font-urbanist text-3xl">
@@ -496,7 +499,7 @@ const Home = () => {
                         </div>
 
                         {/* Pro Plan */}
-                        <div className="bg-white border-[#EF720A] border-2 rounded-lg shadow-lg p-6 w-80 relative text-center">
+                        <div className="bg-white border-[#EF720A] border-2 rounded-lg shadow-lg p-6 w-96 relative text-center">
                             <span className="absolute top-0 right-0 bg-blue-500 text-white text-sm font-bold text-lg rounded-full px-2 py-3 transform -translate-y-1/2 translate-x-1/2 rotate-12">Most Popular!</span>
                             <h3 className="text-3xl font-semibold font-lato text-[#073262]">Pro Plan</h3>
                             <p className="text-[#595959] mt-1 font-lato italic text-nowrap">Advanced Tools for Growing Businesses</p>
@@ -514,7 +517,7 @@ const Home = () => {
                         </div>
 
                         {/* Enterprise Plan */}
-                        <div className="bg-white border-[#EF720A] border-2 rounded-lg shadow-lg p-6 w-72 text-center">
+                        <div className="bg-white border-[#EF720A] border-2 rounded-lg shadow-lg p-6 w-96 text-center">
                             <h3 className="text-3xl font-semibold font-lato text-[#073262]">Enterprise Plan</h3>
                             <p className="font-lato text-2xl mt-1 text-[#FD7E14] font-bold">Flexible Price to fit your needs</p>
                             <ul className="mt-8 space-y-2 list-inside list-disc flex flex-col items-start font-lato mb-5 text-[#595959] ">
