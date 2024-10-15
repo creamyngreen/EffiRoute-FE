@@ -405,7 +405,7 @@ const Home = () => {
                     </div>
                 </div>
 
-            <div className="bg-[#F4F4F4] mt-20">
+            <div className="bg-[#d4cece] mt-20">
                 {/* News */}
                 <div className="container mx-auto py-8 ml-28">
                     <h2 id="news" className="text-3xl font-bold text-[#FD7E14] mb-6 ml-4">FEATURE NEWS</h2>
@@ -492,7 +492,7 @@ const Home = () => {
                 </div>
 
                 {/* Pricing Plans */}
-                <div className="container mx-auto py-8">
+                <div className="container mx-auto py-8 mb-16">
                         <div className="flex justify-center space-x-20">
                         {/* Basic Plan */}
                         <div className="bg-white border-[#EF720A] border-2 rounded-lg shadow-lg p-6 w-96 h-[30rem] text-center">

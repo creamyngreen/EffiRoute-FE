@@ -1,14 +1,7 @@
 import React from 'react';
 import Logo from '../../assets/Home/Logo/Logo.png';
-
+import { Link } from 'react-router-dom';
 const Navbar = () => {
-    const scrollToSection = (id) => {
-        const element = document.getElementById(id);
-        if (element) {
-            element.scrollIntoView({ behavior: 'smooth' });
-        }
-    };
-
     return (
         <nav className="bg-white py-4">
             <div className="flex justify-between items-center">
@@ -17,12 +10,12 @@ const Navbar = () => {
                 </div>
 
                 <div className="flex justify-items-end space-x-20 mr-12">
-                    <a href="#solution" onClick={() => scrollToSection('route-planning')} className="text-gray-800 hover:text-[#3596FF] font-noto text-xl">Solution</a>
+                    <a href="#solution" className="text-gray-800 hover:text-[#3596FF] font-noto text-xl">Solution</a>
                     <a href="#services" className="text-gray-800 hover:text-[#3596FF] font-noto text-xl">Services</a>
                     <a href="#whychooseus" className="text-gray-800 hover:text-[#3596FF] font-noto text-xl">Why choose us</a>
                     <a href="#news" className="text-gray-800 hover:text-[#3596FF] font-noto text-xl">News</a>
                     <a href="#pricing" className="text-gray-800 hover:text-[#3596FF] font-noto text-xl">Pricing</a>
-                    <a href="#" className="text-gray-800 hover:text-[#3596FF] font-noto text-xl">Sign In</a>
+                    <Link to="/login" className="text-gray-800 hover:text-[#3596FF] font-noto text-xl">Sign In</Link>
                 </div>
             </div>
         </nav>
