@@ -43,8 +43,8 @@ const Home = () => {
                         all-in-one route optimization platform.
                     </p>
                     <button
-                        style={{ width: '10rem' }} 
-                        className="mt-4 bg-[#FD7E14] text-white text-lg py-2 px-4 rounded font-bold font-quattrocento"
+                        style={{ width: '10rem',height:'3.5rem' }} 
+                        className="mt-4 bg-[#FD7E14] text-white text-xl py-2 px-4 rounded font-bold font-quattrocento"
                     >
                         Start Free Trial
                     </button>
@@ -181,8 +181,8 @@ const Home = () => {
 
             <div className="flex justify-center items-center mt-10">
                 <button
-                    style={{ width: '150px' }}
-                    className="bg-[#FD7E14] text-white text-lg py-2 px-4 rounded font-bold font-lato"
+                    style={{ width: '10rem',height:'3.5rem' }}
+                    className="bg-[#FD7E14] text-white text-xl py-2 px-4 rounded font-bold font-lato"
                 >
                     Get Start {">"}
                 </button>
@@ -217,8 +217,8 @@ const Home = () => {
                     </div>
                     <div>
                         <button
-                            style={{ width: '150px',height:'55px' }} 
-                            className="mt-5 bg-[#FD7E14] text-white text-lg py-2 px-4 rounded font-bold font-lato"
+                            style={{ width: '10rem',height:'3.5rem' }} 
+                            className="mt-5 bg-[#FD7E14] text-white text-xl py-2 px-4 rounded font-bold font-lato"
                         >
                             Read more {">"}
                         </button>
@@ -252,8 +252,8 @@ const Home = () => {
                     </div>
                     <div>
                         <button
-                            style={{ width: '150px',height:'55px' }} 
-                            className="mt-5 bg-[#FD7E14] text-white text-lg py-2 px-4 rounded font-bold font-lato"
+                            style={{ width: '10rem',height:'3.5rem' }} 
+                            className="mt-5 bg-[#FD7E14] text-white text-xl py-2 px-4 rounded font-bold font-lato"
                         >
                             Read more {">"}
                         </button>
@@ -279,8 +279,8 @@ const Home = () => {
                     </div>
                     <div>
                         <button
-                            style={{ width: '150px',height:'55px' }} 
-                            className="mt-5 bg-[#FD7E14] text-white text-lg py-2 px-4 rounded font-bold font-lato"
+                            style={{ width: '10rem',height:'3.5rem' }} 
+                            className="mt-5 bg-[#FD7E14] text-white text-xl py-2 px-4 rounded font-bold font-lato"
                         >
                             Read more {">"}
                         </button>
