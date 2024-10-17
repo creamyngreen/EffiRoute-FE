@@ -15,6 +15,7 @@ export default {
         urbanist: ['Urbanist', 'sans-serif'],
         roboto: ['Roboto', 'sans-serif'],
         inter: ['Inter', 'sans-serif'],
+        nunito: ['Nunito Sans', 'sans-serif'],
       },
     },
   },

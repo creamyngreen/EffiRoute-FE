@@ -7,13 +7,13 @@ import Footer from './Components/Footer/Footer';
 
 const AppLayout = ({ children }) => {
     const location = useLocation();
-    const hideNavbarPaths = ['/login', '/verify-code', '/forgot-password','/reset-password'];
-    
+    const hideNavbarPaths = ['/login', '/verify-code', '/forgot-password','/reset-password','/admin','/account','/supplier'];
+    const hideFooterPaths = ['/admin','/account','/supplier'];
     return (
         <>
             {!hideNavbarPaths.includes(location.pathname) && <Navbar />}
             {children}
-            <Footer />
+            {!hideFooterPaths.includes(location.pathname) && <Footer />}
         </>
     );
 };

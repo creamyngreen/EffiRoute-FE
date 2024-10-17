@@ -15,7 +15,7 @@ const Navbar = () => {
                     <a href="#whychooseus" className="text-gray-800 hover:text-[#3596FF] font-noto text-xl">Why choose us</a>
                     <a href="#news" className="text-gray-800 hover:text-[#3596FF] font-noto text-xl">News</a>
                     <a href="#pricing" className="text-gray-800 hover:text-[#3596FF] font-noto text-xl">Pricing</a>
-                    <Link to="/login" className="text-gray-800 hover:text-[#3596FF] font-noto text-xl">Sign In</Link>
+                    <Link to="/login" className="text-gray-800 hover:text-[#3596FF] font-noto text-xl">Log In</Link>
                 </div>
             </div>
         </nav>
