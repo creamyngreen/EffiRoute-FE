@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import TopSearchBar from "../../Components/TopSearchBar/TopSearchBar"; 
-import SideBarAdmin from "../../Components/SidebarAdmin/SidebarAdmin";  
+import TopSearchBar from "../../Components/TopSearchBar/TopSearchBar";
+import SideBarAdmin from "../../Components/SidebarAdmin/SidebarAdmin";
 import filter from "../../assets/Admin/filter.png";
 import arrowdown from "../../assets/Admin/arrowdown.png";
 import reset from "../../assets/Admin/reset.png";
@@ -24,6 +24,10 @@ const AccountManagement = () => {
   const [filterRole, setFilterRole] = useState('');
   const [filterDate, setFilterDate] = useState('');
   
+  // State for dropdown visibility
+  const [showDateDropdown, setShowDateDropdown] = useState(false);
+  const [showRoleDropdown, setShowRoleDropdown] = useState(false);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const now = new Date();
@@ -105,18 +109,18 @@ const AccountManagement = () => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Enter name"
-                  className="w-80 p-2 border border-gray-300 rounded"
+                  className="w-full p-2 border border-gray-300 rounded"
                   required
                 />
               </div>
-              <div className="-ml-80">
+              <div>
                 <label className="block mb-1 font-semibold">Email</label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter email"
-                  className="w-80 p-2 border border-gray-300 rounded"
+                  className="w-full p-2 border border-gray-300 rounded"
                   required
                 />
               </div>
@@ -127,18 +131,18 @@ const AccountManagement = () => {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="Enter phone number"
-                  className="w-80 p-2 border border-gray-300 rounded"
+                  className="w-full p-2 border border-gray-300 rounded"
                   required
                 />
               </div>
-              <div className="-ml-80">
+              <div>
                 <label className="block mb-1 font-semibold">Address</label>
                 <input
                   type="text"
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   placeholder="Enter address"
-                  className="w-80 p-2 border border-gray-300 rounded"
+                  className="w-full p-2 border border-gray-300 rounded"
                   required
                 />
               </div>
@@ -147,21 +151,21 @@ const AccountManagement = () => {
                 <select
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
-                  className="w-80 p-2 border border-gray-300 rounded"
+                  className="w-full p-2 border border-gray-300 rounded"
                   required
                 >
                   <option value="Manager">Manager</option>
                   <option value="Planner">Planner</option>
                 </select>
               </div>
-              <div className="-ml-80">
+              <div>
                 <label className="block mb-1 font-semibold">Password</label>
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter password"
-                  className="w-80 p-2 border border-gray-300 rounded"
+                  className="w-full p-2 border border-gray-300 rounded"
                   required
                 />
               </div>
@@ -172,7 +176,7 @@ const AccountManagement = () => {
                   value={repeatPassword}
                   onChange={(e) => setRepeatPassword(e.target.value)}
                   placeholder="Repeat password"
-                  className="w-80 p-2 border border-gray-300 rounded"
+                  className="w-full p-2 border border-gray-300 rounded"
                   required
                 />
               </div>
@@ -182,40 +186,63 @@ const AccountManagement = () => {
             </button>
           </form>
 
-          {/* Filter Section*/}
+
+
+          {/* Filter Section */}
           <div className="flex items-center mb-4 ml-5">
             <img src={filter} alt="Filter" className="w-5 h-5 mr-2" />
             <span className="mx-10 font-bold">Filter By</span>
-            <div className="flex items-center mx-10">
+
+            {/* Date Filter */}
+            <div className="relative flex items-center mx-10">
               <span className="font-bold mr-5">Date</span>
-              <img src={arrowdown} alt="Date Filter" className=" w-5 h-5 mr-1" />
-              <input
-                type="date"
-                value={filterDate}
-                onChange={(e) => setFilterDate(e.target.value)}
-                className="p-1 border border-gray-300 rounded"
+              <img
+                src={arrowdown}
+                alt="Date Filter"
+                className="cursor-pointer w-5 h-5 mr-1"
+                onClick={() => setShowDateDropdown(!showDateDropdown)}
               />
+              {showDateDropdown && (
+                <input
+                  type="date"
+                  value={filterDate}
+                  onChange={(e) => setFilterDate(e.target.value)}
+                  className="absolute top-10 left-0 p-1 border border-gray-300 rounded"
+                />
+              )}
             </div>
-            <div className="flex items-center mx-10">
+
+            {/* Role Filter */}
+            <div className="relative flex items-center mx-10">
               <span className="font-bold mr-5">Role</span>
-              <img src={arrowdown} alt="Role Filter" className="w-5 h-5 mr-1" />
-              <select
-                value={filterRole}
-                onChange={(e) => setFilterRole(e.target.value)}
-                className="p-1 border border-gray-300 rounded"
-              >
-                <option value="">All Roles</option>
-                <option value="Manager">Manager</option>
-                <option value="Planner">Planner</option>
-              </select>
+              <img
+                src={arrowdown}
+                alt="Role Filter"
+                className="cursor-pointer w-5 h-5 mr-1"
+                onClick={() => setShowRoleDropdown(!showRoleDropdown)}
+              />
+              {showRoleDropdown && (
+                <select
+                  value={filterRole}
+                  onChange={(e) => setFilterRole(e.target.value)}
+                  className="absolute top-10 left-0 p-1 border border-gray-300 rounded"
+                >
+                  <option value="">All</option>
+                  <option value="Manager">Manager</option>
+                  <option value="Planner">Planner</option>
+                </select>
+              )}
             </div>
+
+            <div className="ml-20">
             <button onClick={handleResetFilters} className="flex items-center text-red-600 p-2 font-semibold rounded">
               <img src={reset} alt="Reset Filter" className="mr-1 w-4 h-4" />
               Reset Filter
             </button>
+            </div>
           </div>
 
-          {/* User Account List */}
+          {/* Users Table */}
           <table className="min-w-full bg-white shadow-md rounded-lg">
             <thead>
               <tr className="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
@@ -227,11 +254,11 @@ const AccountManagement = () => {
                 <th className="py-3 px-6 text-left">Role</th>
                 <th className="py-3 px-6 text-left">Created At</th>
                 <th className="py-3 px-6 text-left">Updated At</th>
-                <th className="py-3 px-6 text-left">Actions</th>
+                <th className="py-3 px-6 text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="text-gray-600 text-sm font-light">
-              {filteredUsers.map(user => (
+              {filteredUsers.map((user) => (
                 <tr key={user.id} className="border-b border-gray-200 hover:bg-gray-100">
                   <td className="py-3 px-6 text-left">{user.id}</td>
                   <td className="py-3 px-6 text-left">{user.name}</td>
@@ -239,11 +266,21 @@ const AccountManagement = () => {
                   <td className="py-3 px-6 text-left">{user.phone}</td>
                   <td className="py-3 px-6 text-left">{user.address}</td>
                   <td className="py-3 px-6 text-left">{user.role}</td>
-                  <td className="py-3 px-6 text-left">{user.created_at.toLocaleString()}</td>
-                  <td className="py-3 px-6 text-left">{user.updated_at.toLocaleString()}</td>
-                  <td className="py-3 px-6 text-left">
-                    <button onClick={() => handleEdit(user)} className="text-yellow-600 hover:text-yellow-800 mr-2">Edit</button>
-                    <button onClick={() => handleDelete(user.id)} className="text-red-600 hover:text-red-800">Delete</button>
+                  <td className="py-3 px-6 text-left">{user.created_at.toLocaleDateString()}</td>
+                  <td className="py-3 px-6 text-left">{user.updated_at.toLocaleDateString()}</td>
+                  <td className="py-3 px-6 text-center">
+                    <button
+                      onClick={() => handleEdit(user)}
+                      className="text-blue-500 hover:text-blue-700 font-semibold mr-2"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(user.id)}
+                      className="text-red-500 hover:text-red-700 font-semibold"
+                    >
+                      Delete
+                    </button>
                   </td>
                 </tr>
               ))}
