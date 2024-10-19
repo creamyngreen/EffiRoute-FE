@@ -1,30 +1,34 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import Navbar from './Components/Navbar/Navbar';
-import AppRoute from './routes/AppRoute';
-import Footer from './Components/Footer/Footer';
-
+import { BrowserRouter as Router, useLocation } from "react-router-dom";
+import Navbar from "./Components/Navbar/Navbar";
+import AppRoute from "./routes/AppRoute";
+import Footer from "./Components/Footer/Footer";
 
 const AppLayout = ({ children }) => {
-    const location = useLocation();
-    const hideNavbarPaths = ['/login', '/verify-code', '/forgot-password','/reset-password','/admin','/account','/supplier'];
-    const hideFooterPaths = ['/admin','/account','/supplier'];
-    return (
-        <>
-            {!hideNavbarPaths.includes(location.pathname) && <Navbar />}
-            {children}
-            {!hideFooterPaths.includes(location.pathname) && <Footer />}
-        </>
-    );
+  const location = useLocation();
+  const hideNavbarPaths = [
+    "/login",
+    "/verify-code",
+    "/forgot-password",
+    "/reset-password",
+    "/admin",
+    "/account",
+    "/supplier",
+  ];
+  const hideFooterPaths = ["/admin", "/account", "/supplier"];
+  return (
+    <>
+      {!hideNavbarPaths.includes(location.pathname) && <Navbar />}
+      {children}
+      {!hideFooterPaths.includes(location.pathname) && <Footer />}
+    </>
+  );
 };
 
 function App() {
   return (
     <Router>
       <AppLayout>
-        <AppRoute/>
-          
-        
+        <AppRoute />
       </AppLayout>
     </Router>
   );
