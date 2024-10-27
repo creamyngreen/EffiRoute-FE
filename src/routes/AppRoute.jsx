@@ -5,17 +5,23 @@ import VerifyCode from "../Pages/VerifyCode/VerifyCode";
 import ResetPassword from "../Pages/ResetPassword/ResetPassword";
 import Home from "../Pages/Home/Home";
 import Admin from "../Pages/Admin/Admin";
-import AccountManagement from "../Pages/AccountManagement/AccountManagement";
-import Supplier from "../Pages/Supplier/Supplier";
+import AccountManagement from "../Pages/Admin/AccountManagement/AccountManagement";
+import Supplier from "../Pages/Admin/Supplier/Supplier";
 import LoginWithSSO from "../Components/LoginWithSSO/LoginWithSSO";
+import Planner from "../Pages/Planner/Planner";
+import Order from "../Pages/Order/Order";
+import Manager from "../Pages/Manager/Manager";
 const AppRoute = () => {
   return (
     <>
       <Routes>
         <Route path="/" exact element={<Home />} />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/account" element={<AccountManagement />} />
         <Route path="/admin" element={<Admin />} />
+        <Route path="/order" element={<Order />} />
+        <Route path="/planner" element={<Planner />} />
+        <Route path="/manager" element={<Manager />} />
+        <Route path="/account" element={<AccountManagement />} />
         <Route path="/supplier" element={<Supplier />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/verify-code" element={<VerifyCode />} />
