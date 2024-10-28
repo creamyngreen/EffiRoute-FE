@@ -178,50 +178,62 @@ const AccountManagement = () => {
               Create Account
             </button>
           </div>
-
-          {/* Users Table */}
-          <table className="min-w-full bg-white shadow-md rounded-lg">
-            <thead>
-              <tr className="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
-                <th className="py-3 px-6 text-left">ID</th>
-                <th className="py-3 px-6 text-left">Name</th>
-                <th className="py-3 px-6 text-left">Email</th>
-                <th className="py-3 px-6 text-left">Phone</th>
-                <th className="py-3 px-6 text-left">Address</th>
-                <th className="py-3 px-6 text-left">Role</th>
-                <th className="py-3 px-6 text-center">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="text-gray-600 text-sm font-light">
-              {filteredUsers.map((user) => (
-                <tr
-                  key={user.id}
-                  className="border-b border-gray-200 hover:bg-gray-100"
-                >
-                  <td className="py-3 px-6 text-left">{user.id}</td>
-                  <td className="py-3 px-6 text-left">{user.name}</td>
-                  <td className="py-3 px-6 text-left">{user.email}</td>
-                  <td className="py-3 px-6 text-left">{user.phone}</td>
-                  <td className="py-3 px-6 text-left">{user.address}</td>
-                  <td className="py-3 px-6 text-left">{user.role}</td>
-                  <td className="py-3 px-6 text-center">
-                    <button
-                      onClick={() => handleEdit(user)}
-                      className="text-blue-500 hover:text-blue-700 font-semibold mr-2"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(user.id)}
-                      className="text-red-500 hover:text-red-700 font-semibold"
-                    >
-                      Delete
-                    </button>
-                  </td>
+          <div className="overflow-x-auto mb-6">
+            {/* Users Table */}
+            <table className="w-full mt-4 table-fixed border-collapse shadow-md rounded-lg bg-white">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="border p-2 text-left font-semibold text-gray-700">
+                    ID
+                  </th>
+                  <th className="border p-2 text-left font-semibold text-gray-700">
+                    Name
+                  </th>
+                  <th className="border p-2 text-left font-semibold text-gray-700">
+                    Email
+                  </th>
+                  <th className="border p-2 text-left font-semibold text-gray-700">
+                    Phone
+                  </th>
+                  <th className="border p-2 text-left font-semibold text-gray-700">
+                    Address
+                  </th>
+                  <th className="border p-2 text-left font-semibold text-gray-700">
+                    Role
+                  </th>
+                  <th className="border p-2 text-left font-semibold text-gray-700">
+                    Actions
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {filteredUsers.map((user) => (
+                  <tr key={user.id} className="hover:bg-gray-50">
+                    <td className="border p-2 text-gray-800">{user.id}</td>
+                    <td className="border p-2 text-gray-800">{user.name}</td>
+                    <td className="border p-2 text-gray-800">{user.email}</td>
+                    <td className="border p-2 text-gray-800">{user.phone}</td>
+                    <td className="border p-2 text-gray-800">{user.address}</td>
+                    <td className="border p-2 text-gray-800">{user.role}</td>
+                    <td className="border p-2 text-gray-800">
+                      <button
+                        onClick={() => handleEdit(user)}
+                        className="text-blue-500 hover:text-blue-700 font-semibold mr-2"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(user.id)}
+                        className="text-red-500 hover:text-red-700 font-semibold"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
           {isModalOpen && (
             <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">

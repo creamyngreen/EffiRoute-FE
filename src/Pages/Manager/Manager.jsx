@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Logo from "../../assets/Home/Logo/Logo.png";
 import NavBarManager from "../../Components/NavBarManager/NavBarManager";
 import filter from "../../assets/Admin/filter.png";
 import reset from "../../assets/Admin/reset.png";
@@ -36,7 +35,6 @@ const Manager = () => {
     },
   ]);
 
-  const [selectedPlanId, setSelectedPlanId] = useState(null);
   const [filterStatus, setFilterStatus] = useState("");
 
   const handleApprove = (id) => {
@@ -86,7 +84,6 @@ const Manager = () => {
               <option value="Approved">Approved</option>
               <option value="Rejected">Rejected</option>
               <option value="Pending">Pending</option>
-              <option value="Pending">Done</option>
             </select>
             <button
               onClick={handleFilterReset}
@@ -107,28 +104,42 @@ const Manager = () => {
           Procurement Plan Status
         </h3>
         <div className="overflow-x-auto mb-6">
-          <table className="min-w-full border-collapse border border-gray-200">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="py-2 px-4 border-b text-left">ID</th>
-                <th className="py-2 px-4 border-b text-left">Demand</th>
-                <th className="py-2 px-4 border-b text-left">Priority</th>
-                <th className="py-2 px-4 border-b text-left">Deadline</th>
-                <th className="py-2 px-4 border-b text-left">Destination</th>
-                <th className="py-2 px-4 border-b text-left">Status</th>
-                <th className="py-2 px-4 border-b text-left">Actions</th>
+          <table className="w-full table-fixed border-collapse">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="py-2 px-4 border text-left font-semibold text-gray-700">
+                  ID
+                </th>
+                <th className="py-2 px-4 border text-left font-semibold text-gray-700">
+                  DEMAND
+                </th>
+                <th className="py-2 px-4 border text-left font-semibold text-gray-700">
+                  PRIORITY
+                </th>
+                <th className="py-2 px-4 border text-left font-semibold text-gray-700">
+                  DEADLINE
+                </th>
+                <th className="py-2 px-4 border text-left font-semibold text-gray-700">
+                  DESTINATION
+                </th>
+                <th className="py-2 px-4 border text-left font-semibold text-gray-700">
+                  STATUS
+                </th>
+                <th className="py-2 px-4 border text-left font-semibold text-gray-700">
+                  ACTIONS
+                </th>
               </tr>
             </thead>
             <tbody>
               {filteredPlans.map((plan) => (
-                <tr key={plan.id} className="text-gray-700">
-                  <td className="py-2 px-4 border-b">{plan.id}</td>
-                  <td className="py-2 px-4 border-b">{plan.demand}</td>
-                  <td className="py-2 px-4 border-b">{plan.priority}</td>
-                  <td className="py-2 px-4 border-b">{plan.deadline}</td>
-                  <td className="py-2 px-4 border-b">{plan.destination}</td>
-                  <td className="py-2 px-4 border-b">{plan.status}</td>
-                  <td className="py-2 px-4 border-b">
+                <tr key={plan.id} className="text-gray-700 hover:bg-gray-50">
+                  <td className="py-2 px-4 border">{plan.id}</td>
+                  <td className="py-2 px-4 border">{plan.demand}</td>
+                  <td className="py-2 px-4 border">{plan.priority}</td>
+                  <td className="py-2 px-4 border">{plan.deadline}</td>
+                  <td className="py-2 px-4 border">{plan.destination}</td>
+                  <td className="py-2 px-4 border">{plan.status}</td>
+                  <td className="py-2 px-4 border">
                     <button
                       onClick={() => handleApprove(plan.id)}
                       className="text-green-500 hover:underline mr-2"

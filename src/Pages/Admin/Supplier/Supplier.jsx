@@ -227,68 +227,117 @@ const SupplierManagement = () => {
           </div>
 
           {/* Suppliers Table */}
-          <table className="min-w-full bg-white shadow-md rounded-lg">
-            <thead>
-              <tr className="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
-                <th className="py-3 px-6 text-left">ID</th>
-                <th className="py-3 px-6 text-left">Name</th>
-                <th className="py-3 px-6 text-left">Address</th>
-                <th className="py-3 px-6 text-left">Phone</th>
-                <th className="py-3 px-6 text-left">Representative</th>
-                <th className="py-3 px-6 text-left">Email</th>
-                <th className="py-3 px-6 text-left">Sector</th>
-                <th className="py-3 px-6 text-left">Product & Service</th>
-                <th className="py-3 px-6 text-left">Market</th>
-                <th className="py-3 px-6 text-left">Tax</th>
-                <th className="py-3 px-6 text-left">Year</th>
-                <th className="py-3 px-6 text-left">Scale</th>
-                <th className="py-3 px-6 text-left">Capacity</th>
-                <th className="py-3 px-6 text-center">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="text-gray-600 text-sm font-light">
-              {filteredSuppliers.map((supplier) => (
-                <tr
-                  key={supplier.id}
-                  className="border-b border-gray-200 hover:bg-gray-100"
-                >
-                  <td className="py-3 px-6 text-left">{supplier.id}</td>
-                  <td className="py-3 px-6 text-left">{supplier.name}</td>
-                  <td className="py-3 px-6 text-left">{supplier.address}</td>
-                  <td className="py-3 px-6 text-left">{supplier.phone}</td>
-                  <td className="py-3 px-6 text-left">
-                    {supplier.representative}
-                  </td>
-                  <td className="py-3 px-6 text-left">{supplier.email}</td>
-                  <td className="py-3 px-6 text-left">{supplier.sector}</td>
-                  <td className="py-3 px-6 text-left">
-                    {supplier.product_service}
-                  </td>
-                  <td className="py-3 px-6 text-left">{supplier.market}</td>
-                  <td className="py-3 px-6 text-left">{supplier.tax}</td>
-                  <td className="py-3 px-6 text-left">{supplier.year}</td>
-                  <td className="py-3 px-6 text-left">{supplier.scale}</td>
-                  <td className="py-3 px-6 text-left">{supplier.capacity}</td>
-                  <td className="py-3 px-6 text-center">
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => handleEdit(supplier)}
-                        className="text-blue-500 hover:text-blue-700 font-semibold mr-2"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(supplier.id)}
-                        className="text-red-500 hover:text-red-700 font-semibold"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </td>
+          <div className="overflow-x-auto mb-6">
+            <table className="min-w-full bg-white border-collapse border shadow-md rounded-lg">
+              <thead>
+                <tr className="bg-gray-100 uppercase text-base">
+                  <th className="border p-2 text-left font-semibold text-gray-700 whitespace-nowrap">
+                    ID
+                  </th>
+                  <th className="border p-2 text-left font-semibold text-gray-700 whitespace-nowrap">
+                    Name
+                  </th>
+                  <th className="border p-2 text-left font-semibold text-gray-700 whitespace-nowrap">
+                    Address
+                  </th>
+                  <th className="border p-2 text-left font-semibold text-gray-700 whitespace-nowrap">
+                    Phone
+                  </th>
+                  <th className="border p-2 text-left font-semibold text-gray-700 whitespace-nowrap">
+                    Representative
+                  </th>
+                  <th className="border p-2 text-left font-semibold text-gray-700 whitespace-nowrap">
+                    Email
+                  </th>
+                  <th className="border p-2 text-left font-semibold text-gray-700 whitespace-nowrap">
+                    Sector
+                  </th>
+                  <th className="border p-2 text-left font-semibold text-gray-700 whitespace-nowrap">
+                    Product & Service
+                  </th>
+                  <th className="border p-2 text-left font-semibold text-gray-700 whitespace-nowrap">
+                    Market
+                  </th>
+                  <th className="border p-2 text-left font-semibold text-gray-700 whitespace-nowrap">
+                    Tax
+                  </th>
+                  <th className="border p-2 text-left font-semibold text-gray-700 whitespace-nowrap">
+                    Year
+                  </th>
+                  <th className="border p-2 text-left font-semibold text-gray-700 whitespace-nowrap">
+                    Scale
+                  </th>
+                  <th className="border p-2 text-left font-semibold text-gray-700 whitespace-nowrap">
+                    Capacity
+                  </th>
+                  <th className="border p-2 text-left font-semibold text-gray-700 whitespace-nowrap">
+                    Actions
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="text-gray-600 text-base font-light">
+                {filteredSuppliers.map((supplier) => (
+                  <tr key={supplier.id} className="hover:bg-gray-50">
+                    <td className="border p-2 text-gray-800 whitespace-nowrap">
+                      {supplier.id}
+                    </td>
+                    <td className="border p-2 text-gray-800 whitespace-nowrap">
+                      {supplier.name}
+                    </td>
+                    <td className="border p-2 text-gray-800 whitespace-nowrap">
+                      {supplier.address}
+                    </td>
+                    <td className="border p-2 text-gray-800 whitespace-nowrap">
+                      {supplier.phone}
+                    </td>
+                    <td className="border p-2 text-gray-800 whitespace-nowrap">
+                      {supplier.representative}
+                    </td>
+                    <td className="border p-2 text-gray-800 whitespace-nowrap">
+                      {supplier.email}
+                    </td>
+                    <td className="border p-2 text-gray-800 whitespace-nowrap">
+                      {supplier.sector}
+                    </td>
+                    <td className="border p-2 text-gray-800 whitespace-nowrap">
+                      {supplier.product_service}
+                    </td>
+                    <td className="border p-2 text-gray-800 whitespace-nowrap">
+                      {supplier.market}
+                    </td>
+                    <td className="border p-2 text-gray-800 whitespace-nowrap">
+                      {supplier.tax}
+                    </td>
+                    <td className="border p-2 text-gray-800 whitespace-nowrap">
+                      {supplier.year}
+                    </td>
+                    <td className="border p-2 text-gray-800 whitespace-nowrap">
+                      {supplier.scale}
+                    </td>
+                    <td className="border p-2 text-gray-800 whitespace-nowrap">
+                      {supplier.capacity}
+                    </td>
+                    <td className="border p-2 text-center whitespace-nowrap">
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => handleEdit(supplier)}
+                          className="text-blue-500 hover:text-blue-700 font-semibold"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDelete(supplier.id)}
+                          className="text-red-500 hover:text-red-700 font-semibold"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
           {/* Modal for creating and editing suppliers */}
           {isModalOpen && (

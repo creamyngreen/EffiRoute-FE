@@ -4,21 +4,74 @@ import NavBarPlanner from "../../Components/NavBarPlanner/NavBarPlanner";
 import reset from "../../assets/Admin/reset.png";
 import arrowdown from "../../assets/Admin/arrowdown.png";
 import filter from "../../assets/Admin/filter.png";
+
 const Planner = () => {
-  const navigate = useNavigate(); // Initialize useNavigate
-  const [procurementPlans, setProcurementPlans] = useState([]);
+  const navigate = useNavigate();
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "Pending":
+        return "text-yellow-600";
+      case "Completed":
+        return "text-green-600";
+      case "Rejected":
+        return "text-red-600";
+      case "Approved":
+        return "text-blue-600";
+      default:
+        return "";
+    }
+  };
+  // Initial dummy data for procurement plans
+  const [procurementPlans, setProcurementPlans] = useState([
+    {
+      id: "PP-101",
+      demand: "1000 units",
+      priority: "High",
+      deadline: "2024-12-10",
+      destination: "Warehouse A",
+      supplier: "Supplier X",
+      transportation: "Air Freight",
+      dateCreated: "2024-10-15",
+      status: "Pending",
+    },
+    {
+      id: "PP-102",
+      demand: "500 units",
+      priority: "Medium",
+      deadline: "2024-11-05",
+      destination: "Warehouse B",
+      supplier: "Supplier Y",
+      transportation: "Sea Freight",
+      dateCreated: "2024-10-18",
+      status: "Completed",
+    },
+    {
+      id: "PP-103",
+      demand: "300 units",
+      priority: "Low",
+      deadline: "2024-12-01",
+      destination: "Warehouse C",
+      supplier: "Supplier Z",
+      transportation: "Truck",
+      dateCreated: "2024-10-20",
+      status: "Rejected",
+    },  
+  ]);
+
   const [filterPriority, setFilterPriority] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
+  const [showPriorityFilters, setShowPriorityFilters] = useState(false);
+  const [showStatusFilters, setShowStatusFilters] = useState(false);
+
   const [planDetails, setPlanDetails] = useState({
     id: `PP-${Date.now()}`,
     demand: "",
     priority: "Medium",
     deadline: "",
     destination: "",
+    supplier: "",
+    transportation: "",
   });
-
-  const [showPriorityFilters, setShowPriorityFilters] = useState(false); // State for priority filter visibility
-  const [showStatusFilters, setShowStatusFilters] = useState(false); // State for status filter visibility
 
   const handleInputChange = (e) => {
     setPlanDetails({ ...planDetails, [e.target.name]: e.target.value });
@@ -32,6 +85,8 @@ const Planner = () => {
       priority: "Medium",
       deadline: "",
       destination: "",
+      supplier: "",
+      transportation: "",
     });
   };
 
@@ -40,26 +95,22 @@ const Planner = () => {
   };
 
   const handleNext = () => {
-    navigate("/order"); // Navigate to the Order page
-  };
-
-  const handleView = (planId) => {
-    navigate("/order", { state: { planId } });
+    navigate("/order");
   };
 
   const handleFilterReset = () => {
     setFilterPriority("");
     setFilterStatus("");
-    setShowPriorityFilters(false); // Close priority filters
-    setShowStatusFilters(false); // Close status filters
+    setShowPriorityFilters(false);
+    setShowStatusFilters(false);
   };
 
-  // Filtered procurement plans based on selected filters
+  // Filter procurement plans based on selected filters
   const filteredPlans = procurementPlans.filter((plan) => {
     const matchesPriority = filterPriority
       ? plan.priority === filterPriority
       : true;
-    const matchesStatus = filterStatus ? plan.status === filterStatus : true; // Assuming status is defined
+    const matchesStatus = filterStatus ? plan.status === filterStatus : true;
     return matchesPriority && matchesStatus;
   });
 
@@ -137,6 +188,36 @@ const Planner = () => {
               className="mt-1 p-2 w-full border border-gray-300 rounded-md"
             />
           </div>
+          <div>
+            <label className="block text-lg font-medium text-gray-700">
+              Supplier
+            </label>
+            <select
+              name="supplier"
+              value={planDetails.supplier}
+              onChange={handleInputChange}
+              className="mt-1 p-2 w-full border border-gray-300 rounded-md"
+            >
+              <option value="Supplier X">Supplier X</option>
+              <option value="Supplier Y">Supplier Y</option>
+              <option value="Supplier Z">Supplier Z</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-lg font-medium text-gray-700">
+              Transportation
+            </label>
+            <select
+              name="transportation"
+              value={planDetails.transportation}
+              onChange={handleInputChange}
+              className="mt-1 p-2 w-full border border-gray-300 rounded-md"
+            >
+              <option value="Air Freight">Air Freight</option>
+              <option value="Sea Freight">Sea Freight</option>
+              <option value="Truck">Truck</option>
+            </select>
+          </div>
           <div className="flex items-center">
             <button
               onClick={handleUploadCSV}
@@ -171,7 +252,7 @@ const Planner = () => {
             <div className="flex items-center mr-4">
               <span className=" font-medium text-gray-700 mr-2">Priority</span>
               <button
-                onClick={() => setShowPriorityFilters(!showPriorityFilters)} // Toggle priority filter dropdown
+                onClick={() => setShowPriorityFilters(!showPriorityFilters)}
                 className="flex items-center"
               >
                 <img
@@ -181,7 +262,7 @@ const Planner = () => {
                 />
               </button>
             </div>
-            {showPriorityFilters && ( // Conditional rendering for priority dropdown
+            {showPriorityFilters && (
               <div className="flex items-center mr-4 mt-2">
                 <select
                   value={filterPriority}
@@ -198,7 +279,7 @@ const Planner = () => {
             <div className="flex items-center mr-4">
               <span className="font-medium text-gray-700 mr-2">Status</span>
               <button
-                onClick={() => setShowStatusFilters(!showStatusFilters)} // Toggle status filter dropdown
+                onClick={() => setShowStatusFilters(!showStatusFilters)}
                 className="flex items-center"
               >
                 <img
@@ -208,7 +289,7 @@ const Planner = () => {
                 />
               </button>
             </div>
-            {showStatusFilters && ( // Conditional rendering for status dropdown
+            {showStatusFilters && (
               <div className="flex items-center mr-4 mt-2">
                 <select
                   value={filterStatus}
@@ -218,63 +299,67 @@ const Planner = () => {
                   <option value="">All</option>
                   <option value="Pending">Pending</option>
                   <option value="Completed">Completed</option>
-                  <option value="Cancelled">Cancelled</option>
                 </select>
               </div>
             )}
-            <button
+            <img
+              src={reset}
+              alt="Reset Filter"
+              className="w-4 h-4 cursor-pointer ml-4"
               onClick={handleFilterReset}
-              className="text-red-500 px-4 py-2 rounded-lg flex items-center"
-            >
-              <img
-                src={reset}
-                alt="Reset"
-                className="inline-block w-4 h-4 mr-1"
-              />
-              Reset Filters
-            </button>
+            />
           </div>
         </div>
 
         {/* Procurement Plans Table */}
-        <h3 className="text-xl font-semibold mb-2 text-gray-700">
-          Procurement Plan Status
-        </h3>
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white border border-gray-300">
-            <thead className="bg-gray-200">
-              <tr>
-                <th className="py-2 px-4 border-b text-left">ID</th>
-                <th className="py-2 px-4 border-b text-left">Demand</th>
-                <th className="py-2 px-4 border-b text-left">Priority</th>
-                <th className="py-2 px-4 border-b text-left">Deadline</th>
-                <th className="py-2 px-4 border-b text-left">Destination</th>
-                <th className="py-2 px-4 border-b text-left">Status</th>
-                <th className="py-2 px-4 border-b text-left">Actions</th>
+        <table className="w-full mt-4 table-fixed border-collapse">
+          <thead>
+            <tr className="bg-gray-100">
+              <th className="border p-2 text-left font-semibold text-gray-700">
+                ID
+              </th>
+              <th className="border p-2 text-left font-semibold text-gray-700">
+                DEMAND
+              </th>
+              <th className="border p-2 text-left font-semibold text-gray-700">
+                PRIORITY
+              </th>
+              <th className="border p-2 text-left font-semibold text-gray-700">
+                DEADLINE
+              </th>
+              <th className="border p-2 text-left font-semibold text-gray-700">
+                DESTINATION
+              </th>
+              <th className="border p-2 text-left font-semibold text-gray-700">
+                SUPPLIER
+              </th>
+              <th className="border p-2 text-left font-semibold text-gray-700">
+                TRANSPORTATION
+              </th>
+              <th className="border p-2 text-left font-semibold text-gray-700">
+                STATUS
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredPlans.map((plan) => (
+              <tr key={plan.id} className="hover:bg-gray-50">
+                <td className="border p-2 text-gray-800">{plan.id}</td>
+                <td className="border p-2 text-gray-800">{plan.demand}</td>
+                <td className="border p-2 text-gray-800">{plan.priority}</td>
+                <td className="border p-2 text-gray-800">{plan.deadline}</td>
+                <td className="border p-2 text-gray-800">{plan.destination}</td>
+                <td className="border p-2 text-gray-800">{plan.supplier}</td>
+                <td className="border p-2 text-gray-800">
+                  {plan.transportation}
+                </td>
+                <td className={`border p-2 ${getStatusColor(plan.status)}`}>
+                  {plan.status}
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {filteredPlans.map((plan, index) => (
-                <tr key={index} className="text-gray-700">
-                  <td className="py-2 px-4 border-b">{plan.id}</td>
-                  <td className="py-2 px-4 border-b">{plan.demand}</td>
-                  <td className="py-2 px-4 border-b">{plan.priority}</td>
-                  <td className="py-2 px-4 border-b">{plan.deadline}</td>
-                  <td className="py-2 px-4 border-b">{plan.destination}</td>
-                  <td className="py-2 px-4 border-b">Pending</td>
-                  <td className="py-2 px-4 border-b">
-                    <button
-                      onClick={() => handleView(plan.id)}
-                      className="text-blue-500 hover:underline"
-                    >
-                      View
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
