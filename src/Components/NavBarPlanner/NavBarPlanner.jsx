@@ -21,12 +21,12 @@ function NavBarPlanner() {
           {/* Notification Button */}
           <button
             type="button"
-            className="relative mr-5 inline-flex items-center p-3 text-sm font-medium text-center text-white bg-black rounded-lg hover:bg-neutral-800 focus:ring-2 focus:outline-none focus:ring-neutral-700"
+            className="relative mr-5 inline-flex items-center p-3 text-sm font-medium text-center text-white bg-blue-500 rounded-lg hover:bg-blue-600 focus:ring-2 focus:outline-none focus:ring-blue-700"
           >
             <img
               src={noti}
               alt="Notifications"
-              className="w-7 h-7 filter invert contrast-200 brightness-200"
+              className="w-4 h-4 filter invert contrast-200 brightness-200"
             />
             <span className="sr-only">Notifications</span>
             {/* Notification Badge */}
@@ -46,7 +46,7 @@ function NavBarPlanner() {
             <span className="sr-only">Open user menu</span>
             <div className="flex items-end justify-end">
               <img
-                className="w-14 h-14 rounded-full"
+                className="w-12 h-12 rounded-full"
                 src={face2}
                 alt="User photo"
               />
@@ -90,6 +90,30 @@ function NavBarPlanner() {
               </ul>
             </div>
           )}
+        </div>
+        <div
+          className="items-center justify-between hidden text-xl w-full md:flex md:w-auto md:order-1"
+          id="navbar-user"
+        >
+          <ul className="flex flex-col font-medium p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-white ">
+            <li>
+              <a
+                href="/planner"
+                className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 "
+                aria-current="page"
+              >
+                Create Procurement Plan
+              </a>
+            </li>
+            <li>
+              <a
+                href="/procurement"
+                className="block py-2 px-3  text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 "
+              >
+                Monitor
+              </a>
+            </li>
+          </ul>
         </div>
       </div>
     </nav>

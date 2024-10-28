@@ -21,12 +21,12 @@ function NavBarManager() {
           {/* Notification Button */}
           <button
             type="button"
-            className="relative mr-5 inline-flex items-center p-3 text-sm font-medium text-center text-white bg-black rounded-lg hover:bg-neutral-800 focus:ring-2 focus:outline-none focus:ring-neutral-700"
+            className="relative mr-5 inline-flex items-center p-3 text-sm font-medium text-center text-white bg-blue-500 rounded-lg hover:bg-blue-600 focus:ring-2 focus:outline-none focus:ring-blue-700"
           >
             <img
               src={noti}
               alt="Notifications"
-              className="w-7 h-7 filter invert contrast-200 brightness-200"
+              className="w-4 h-4 filter invert contrast-200 brightness-200"
             />
             <span className="sr-only">Notifications</span>
             {/* Notification Badge */}
@@ -46,7 +46,7 @@ function NavBarManager() {
             <span className="sr-only">Open user menu</span>
             <div className="flex items-end justify-end">
               <img
-                className="w-14 h-14 rounded-full"
+                className="w-12 h-12 rounded-full"
                 src={face2}
                 alt="User photo"
               />

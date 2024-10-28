@@ -3,7 +3,7 @@ import Logo from "../../assets/Home/Logo/Logo.png";
 import NavBarPlanner from "../../Components/NavBarPlanner/NavBarPlanner";
 import filter from "../../assets/Admin/filter.png";
 import reset from "../../assets/Admin/reset.png";
-
+import ProgressStep from "../../Components/ProgressStep/ProgressStep";
 const plansData = [
   {
     id: "PP-1",
@@ -160,29 +160,21 @@ const plansData = [
     ],
   },
 ];
-
 const Order = () => {
   const [selectedPlan, setSelectedPlan] = useState(null);
-  const [selectedRoute, setSelectedRoute] = useState(null);
   const [filterRoutes, setFilterRoutes] = useState("");
   const [filterAmount, setFilterAmount] = useState("");
+  const [hoveredRoute, setHoveredRoute] = useState(null);
 
   const handlePlanClick = (plan) => {
     setSelectedPlan(plan);
-    setSelectedRoute(null); // Reset selected route when a new plan is clicked
   };
 
-  const handleRouteClick = (route) => {
-    setSelectedRoute(route);
-  };
-
-  // Function to reset filters
   const resetFilters = () => {
     setFilterRoutes("");
     setFilterAmount("");
   };
 
-  // Filter plans based on total routes and total amount
   const filteredPlans = plansData.filter((plan) => {
     const matchesRoutes = filterRoutes
       ? plan.totalRoutes === parseInt(filterRoutes)
@@ -193,138 +185,87 @@ const Order = () => {
     return matchesRoutes && matchesAmount;
   });
 
-  // Handle Choose button click
-  const handleChoose = () => {
-    if (selectedRoute) {
-      alert(
-        `You chose route: From ${selectedRoute.from} to ${selectedRoute.to}`
-      );
-    }
-  };
-
-  // Handle Cancel button click
-  const handleCancel = () => {
-    setSelectedRoute(null);
-    setSelectedPlan(null);
-  };
-
   return (
-    <div>
+    <div className="flex flex-col h-screen">
       <NavBarPlanner />
-      <div className="flex mx-auto p-6 bg-white shadow-lg rounded-lg mt-8">
-        {/* Sidebar */}
-        <div className="w-1/3 border-r border-gray-300 pr-4">
+      <div className="my-8">
+      <ProgressStep currentStep={2} totalSteps={3} />
+      </div>
+      <div className="flex flex-1">
+        {/* Collapsible Sidebar */}
+        <div className="w-full md:w-1/3 border-r overflow-y-auto border-gray-300 p-4">
           <h2 className="text-3xl font-semibold mb-4">Procurement Plans</h2>
-
           {/* Filters Section */}
           <div className="flex items-center mb-4">
-            <div className="flex items-center">
-              <img src={filter} alt="Filter" className="w-5 h-5 mr-2" />
-              <span className="mr-2 font-bold">Filter By:</span>
-              <input
-                type="number"
-                placeholder="Total Routes"
-                value={filterRoutes}
-                onChange={(e) => setFilterRoutes(e.target.value)}
-                className="border p-1 rounded mr-2"
-              />
-              <input
-                type="number"
-                placeholder="Total Amount"
-                value={filterAmount}
-                onChange={(e) => setFilterAmount(e.target.value)}
-                className="border p-1 rounded mr-2"
-              />
-              <button onClick={resetFilters} className="text-red-600">
-                <img
-                  src={reset}
-                  alt="Reset Filter"
-                  className="inline w-5 h-5 mr-1"
-                />
-                Reset
-              </button>
-            </div>
+            <img src={filter} alt="Filter" className="w-5 h-5 mr-2" />
+            <span className="mr-2 font-bold">Filter By:</span>
+            <input
+              type="number"
+              placeholder="Total Routes"
+              value={filterRoutes}
+              onChange={(e) => setFilterRoutes(e.target.value)}
+              className="border p-1 rounded mr-2"
+            />
+            <input
+              type="number"
+              placeholder="Total Amount"
+              value={filterAmount}
+              onChange={(e) => setFilterAmount(e.target.value)}
+              className="border p-1 rounded mr-2"
+            />
+            <button onClick={resetFilters} className="text-red-600">
+              <img src={reset} alt="Reset Filter" className="inline w-5 h-5 mr-1" />
+              Reset
+            </button>
           </div>
-
           {/* Plans List */}
-          <ul>
+          <div className="grid grid-cols-1 gap-4">
             {filteredPlans.map((plan) => (
-              <li key={plan.id}>
-                <div
-                  className="cursor-pointer hover:bg-gray-100 text-lg p-2 rounded-md"
-                  onClick={() => handlePlanClick(plan)}
-                >
-                  <span className="font-bold">{plan.id}</span> - Total Routes:{" "}
-                  {plan.totalRoutes} | Total Amount: {plan.totalAmount} tons
-                </div>
+              <div
+                key={plan.id}
+                className="cursor-pointer hover:bg-gray-100 text-lg p-2 rounded-md border"
+                onClick={() => handlePlanClick(plan)}
+              >
+                <span className="font-bold">{plan.id}</span> - Total Routes: {plan.totalRoutes} | Total Amount: {plan.totalAmount} tons
                 {selectedPlan?.id === plan.id && (
                   <ul className="ml-4 mt-2">
                     {plan.routes.map((route) => (
                       <li
                         key={route.id}
-                        className="hover:bg-gray-100 text-lg p-1 rounded-md cursor-pointer"
-                        onClick={() => handleRouteClick(route)}
+                        className="relative hover:bg-gray-100 text-lg p-1 rounded-md cursor-pointer"
+                        onMouseEnter={() => setHoveredRoute(route)}
+                        onMouseLeave={() => setHoveredRoute(null)}
                       >
                         Route {route.id}: From {route.from} to {route.to}
+                        {hoveredRoute?.id === route.id && (
+                          <div className="absolute left-48 top-0 ml-2 bg-white border border-gray-300 shadow-lg p-2 rounded-lg w-64 text-sm z-10">
+                            <h3 className="font-bold text-center">Route Details</h3>
+                            <p><strong>From:</strong> {hoveredRoute.from}</p>
+                            <p><strong>To:</strong> {hoveredRoute.to}</p>
+                            <p><strong>Amount:</strong> {hoveredRoute.amount} tons</p>
+                            <p><strong>Cost:</strong> ${hoveredRoute.cost}</p>
+                            <p><strong>Transport Unit:</strong> {hoveredRoute.transportUnit}</p>
+                            <p><strong>Estimated Time:</strong> {hoveredRoute.estimatedTime}</p>
+                            <button
+                              onClick={() => window.location.href = '/procurement'}
+                              className="mt-2 bg-blue-500 text-white p-1 rounded"
+                            >
+                              Choose
+                            </button>
+                          </div>
+                        )}
                       </li>
                     ))}
                   </ul>
                 )}
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Main Content - Map and Route Details */}
-        <div className="w-2/3 pl-4">
-          <h2 className="text-2xl font-semibold mb-4">Route Details</h2>
-          {selectedRoute ? (
-            <div className="mb-6 text-lg">
-              <h3 className="font-bold">Route Information:</h3>
-              <p>
-                <strong>From:</strong> {selectedRoute.from}
-              </p>
-              <p>
-                <strong>To:</strong> {selectedRoute.to}
-              </p>
-              <p>
-                <strong>Amount:</strong> {selectedRoute.amount} tons
-              </p>
-              <p>
-                <strong>Cost:</strong> ${selectedRoute.cost}
-              </p>
-              <p>
-                <strong>Transport Unit:</strong> {selectedRoute.transportUnit}
-              </p>
-              <p>
-                <strong>Estimated Time:</strong> {selectedRoute.estimatedTime}
-              </p>
-
-              {/* Choose and Cancel Buttons */}
-              <div className="mt-4">
-                <button
-                  onClick={handleChoose}
-                  className="bg-blue-500 text-white px-4 py-2 rounded mr-2 hover:bg-blue-600"
-                >
-                  Choose
-                </button>
-                <button
-                  onClick={handleCancel}
-                  className="bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400"
-                >
-                  Cancel
-                </button>
               </div>
-            </div>
-          ) : (
-            <p className="text-gray-500">Select a route to see the details.</p>
-          )}
-
-          {/* Placeholder for the Map */}
-          <div className="mt-4 border rounded-lg h-96">
-            <p className="text-center py-20 text-gray-400">
-              Map will be displayed here
-            </p>
+            ))}
+          </div>
+        </div>
+        {/* Main Content - Map Only */}
+        <div className="w-full md:w-2/3 pl-4">
+          <div className="mt-4 border rounded-lg h-full">
+            <p className="text-center py-20 text-gray-400">Map will be displayed here</p>
           </div>
         </div>
       </div>
