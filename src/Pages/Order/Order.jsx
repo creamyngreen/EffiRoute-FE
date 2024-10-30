@@ -2,9 +2,7 @@ import React, { useState } from "react";
 import Logo from "../../assets/Home/Logo/Logo.png";
 import NavBarPlanner from "../../Components/NavBarPlanner/NavBarPlanner";
 import filter from "../../assets/Admin/filter.png";
-import reset from "../../assets/Admin/reset.png";
-import ProgressStep from "../../Components/ProgressStep/ProgressStep";
-const plansData = [
+import reset from "../../assets/Admin/reset.png";const plansData = [
   {
     id: "PP-1",
     totalRoutes: 2,
@@ -188,11 +186,8 @@ const Order = () => {
   return (
     <div className="flex flex-col h-screen">
       <NavBarPlanner />
-      <div className="my-8">
-      <ProgressStep currentStep={2} totalSteps={3} />
-      </div>
+      <div className="my-8">      </div>
       <div className="flex flex-1">
-        {/* Collapsible Sidebar */}
         <div className="w-full md:w-1/3 border-r overflow-y-auto border-gray-300 p-4">
           <h2 className="text-3xl font-semibold mb-4">Procurement Plans</h2>
           {/* Filters Section */}

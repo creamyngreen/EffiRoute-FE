@@ -3,7 +3,6 @@ import reset from "../../assets/Admin/reset.png";
 import arrowdown from "../../assets/Admin/arrowdown.png";
 import filter from "../../assets/Admin/filter.png";
 import NavBarPlanner from "../NavBarPlanner/NavBarPlanner";
-import ProgressStep from "../../Components/ProgressStep/ProgressStep";
 const ProcurementTable = ({ procurementPlans = [] }) => {
   const [filterPriority, setFilterPriority] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
@@ -80,7 +79,6 @@ const ProcurementTable = ({ procurementPlans = [] }) => {
     <div>
       <NavBarPlanner />
       <div className="my-8">
-        <ProgressStep currentStep={3} />
       </div>
       {/* Filter Section */}
       <div className="my-4">
