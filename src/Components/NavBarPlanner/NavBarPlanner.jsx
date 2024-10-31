@@ -119,7 +119,7 @@ function NavBarPlanner() {
             </li>
             <li>
               <a
-                href="/procurement"
+                href="/order"
                 className="block py-2 px-3  text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-orange-500 md:p-0 "
               >
                 Delivery

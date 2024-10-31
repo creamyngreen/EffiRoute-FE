@@ -11,7 +11,7 @@ import LoginWithSSO from "../Components/LoginWithSSO/LoginWithSSO";
 import Planner from "../Pages/Planner/Planner";
 import Order from "../Pages/Order/Order";
 import Manager from "../Pages/Manager/Manager";
-import ProcurementTable from "../Components/ProcurementTable/ProcurementTable";
+  
 const AppRoute = () => {
   return (
     <>
@@ -20,7 +20,7 @@ const AppRoute = () => {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/order" element={<Order />} />
-        <Route path="/procurement" element={<ProcurementTable />} />
+   
         <Route path="/planner" element={<Planner />} />
         <Route path="/manager" element={<Manager />} />
         <Route path="/account" element={<AccountManagement />} />

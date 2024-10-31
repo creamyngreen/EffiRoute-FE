@@ -8,6 +8,10 @@ import { IoMdArrowDropdown } from "react-icons/io";
 import { DatePicker, Space, Table } from "antd";
 import { RiExpandUpDownFill } from "react-icons/ri";
 import { RiDeleteBack2Line } from "react-icons/ri";
+import { FaFileExcel } from "react-icons/fa";
+import { IoIosCreate } from "react-icons/io";
+import { IoMdClose } from "react-icons/io";
+
 const getStatusTag = (status) => {
   switch (status) {
     case "Completed":
@@ -118,6 +122,8 @@ const Planner = () => {
   const { RangePicker } = DatePicker;
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [rowsToDisplay, setRowsToDisplay] = useState(10);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isSecondModalVisible, setIsSecondModalVisible] = useState(false);
 
   const onSelectChange = (newSelectedRowKeys) => {
     console.log("selectedRowKeys changed: ", newSelectedRowKeys);
@@ -129,10 +135,26 @@ const Planner = () => {
     onChange: onSelectChange,
   };
 
+  const showModal = () => {
+    setIsModalVisible(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalVisible(false);
+  };
+  const handleDateChange = (date, dateString) => {
+    console.log("Selected date:", date, dateString);
+
+  };
   const limitedDataSource = dataSource.slice(0, rowsToDisplay);
 
   const handleRowsChange = (event) => {
     setRowsToDisplay(parseInt(event.target.value, 10));
+  };
+
+  const handleAddOneDirectly = () => {
+    setIsModalVisible(false);
+    setIsSecondModalVisible(true);
   };
 
   return (
@@ -154,7 +176,10 @@ const Planner = () => {
             <button className="border border-gray-300 text-sm font-bold text-[#8F96A9] px-4 py-2 rounded-md hover:bg-gray-100 flex items-center">
               <FaArrowDown className="mr-2 text-xs" /> Order download
             </button>
-            <button className="bg-primary text-white text-sm font-bold px-4 py-2 rounded-md hover:bg-orange-600 flex items-center">
+            <button
+              className="bg-primary text-white text-sm font-bold px-4 py-2 rounded-md hover:bg-orange-600 flex items-center"
+              onClick={showModal}
+            >
               <FaPlus className="mr-2 text-xs" /> Add order
             </button>
           </div>
@@ -363,7 +388,7 @@ const Planner = () => {
         </div>
 
         {/* Plans Summary */}
-        <div className="flex justify-between items-center mt-10 text-gray-600">
+        <div className="flex justify-between items-center mt-10 mb-5 text-gray-600">
           <div className="flex space-x-4 items-center">
             <span>Selected Orders: 00</span>
             <span className="text-gray-400">|</span>
@@ -388,7 +413,8 @@ const Planner = () => {
               Optimize Based on Selected Plan
             </button>
             <button className="bg-white flex items-center text-[#8F96A9] border font-bold border-gray-300 px-4 py-2 rounded-md hover:bg-gray-200">
-            <RiDeleteBack2Line className="mr-2 "/>Withdraw Plan
+              <RiDeleteBack2Line className="mr-2 " />
+              Withdraw Plan
             </button>
             <button className="bg-white text-[#8F96A9] border font-bold border-gray-300 px-4 py-2 rounded-md hover:bg-gray-200">
               Edit Plan Information
@@ -400,8 +426,128 @@ const Planner = () => {
           rowSelection={rowSelection}
           columns={columns}
           dataSource={limitedDataSource}
+          components={{
+            header: {
+              cell: (props) => (
+                <th
+                  {...props}
+                  style={{ backgroundColor: "#f0f0f0", color: "#000" }}
+                >
+                  {props.children}
+                </th>
+              ),
+            },
+          }}
         />
       </div>
+      {isModalVisible && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+          <div className="bg-white p-8 rounded shadow-lg relative w-2/5">
+            <button
+              className="absolute top-2 right-2 text-gray-400 text-xl"
+              onClick={handleCloseModal}
+            >
+              <IoMdClose />
+            </button>
+            <h2 className="text-xl text-center font-bold mb-10">
+              Please select how you would like to add your order.
+            </h2>
+            <div className="flex space-x-4 justify-center mx-auto">
+              <button className="flex flex-col items-center bg-white text-gray-600 w-72 h-48 px-4 py-2 justify-center rounded border border-gray-300 hover:border-green-500">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                  <FaFileExcel className="text-green-500 text-3xl" />
+                </div>
+                <span className="text-lg font-semibold">
+                  Add multiple items to Excel
+                </span>
+              </button>
+              <button
+                className="flex flex-col items-center bg-white text-gray-600 w-72 h-48 px-4 py-2 justify-center rounded border border-gray-300 hover:border-blue-500"
+                onClick={handleAddOneDirectly}
+              >
+                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+                  <IoIosCreate className="text-blue-500 text-3xl" />
+                </div>
+                <span className="text-lg font-semibold">Add one directly</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isSecondModalVisible && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+          <div className="bg-white p-8 rounded shadow-lg relative w-1/4 rounded-lg">
+            <h1 className="text-base text-gray-500 flex justify-between items-center">
+              Add plan
+              <IoMdClose
+                className="cursor-pointer text-gray-400"
+                onClick={() => setIsSecondModalVisible(false)}
+              />
+            </h1>
+            <hr className="my-5" />
+            <h2 className="text-xl text-left font-bold mb-5">
+              Plan Information
+            </h2>
+            <form>
+              <label>Plan Creation Date</label>
+              <DatePicker
+                onChange={handleDateChange} 
+                className="border mt-2 border-gray-300 rounded p-2 w-full mb-4"
+                placeholder="Select creation date"
+              />
+              <label>Demand</label>
+              <input
+                type="text"
+                required
+                className="border mt-2 border-gray-300 rounded p-2 w-full mb-4"
+              />
+              <label>Plan Priority</label>
+              <div className="mt-2 mb-4 rounded-md shadow-sm w-full flex" role="group">
+                <button
+                  type="button"
+                  className="flex-1 px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-s-lg focus:font-bold hover:bg-gray-100 hover:text-primary focus:z-10 focus:ring-2 focus:ring-primary focus:text-primary"
+                >
+                  Low
+                </button>
+                <button
+                  type="button"
+                  className="flex-1 px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 focus:font-bold hover:bg-gray-100 hover:text-primary focus:z-10 focus:ring-2 focus:ring-primary focus:text-primary"
+                >
+                  Medium
+                </button>
+                <button
+                  type="button"
+                  className="flex-1 px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 focus:font-bold hover:bg-gray-100 rounded-e-lg hover:text-primary focus:z-10 focus:ring-2 focus:ring-primary focus:text-primary"
+                >
+                  High
+                </button>
+              </div>
+              <label>Destination</label>
+              <input
+                type="text"
+                required
+                className="border mt-2 border-gray-300 rounded p-2 w-full mb-4"
+              />
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setIsSecondModalVisible(false)}
+                  className="mr-4 w-16 font-medium text-gray-400 border border-gray-300 px-4 py-2 rounded-lg flex justify-center items-center"
+                >
+                  Close
+                </button>
+                <button
+                  type="submit"
+                  className="bg-blue-500 w-32 font-medium text-white px-4 py-2 rounded-lg flex justify-center items-center"
+                >
+                  Add
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
