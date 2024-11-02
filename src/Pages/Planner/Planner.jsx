@@ -477,7 +477,8 @@ const Planner = () => {
 
       {isSecondModalVisible && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-          <div className="bg-white p-8 rounded shadow-lg relative w-1/4 rounded-lg">
+          <div className="bg-white rounded shadow-lg relative w-1/4 rounded-lg">
+          <div className=" pt-5 px-8">
             <h1 className="text-base text-gray-500 flex justify-between items-center">
               Add plan
               <IoMdClose
@@ -485,7 +486,9 @@ const Planner = () => {
                 onClick={() => setIsSecondModalVisible(false)}
               />
             </h1>
+          </div>
             <hr className="my-5" />
+            <div className="px-8 pb-8">
             <h2 className="text-xl text-left font-bold mb-5">
               Plan Information
             </h2>
@@ -539,12 +542,13 @@ const Planner = () => {
                 </button>
                 <button
                   type="submit"
-                  className="bg-blue-500 w-32 font-medium text-white px-4 py-2 rounded-lg flex justify-center items-center"
+                  className="bg-primary/50 w-32 font-medium text-white px-4 py-2 rounded-lg flex justify-center items-center hover:bg-primary"
                 >
                   Add
                 </button>
               </div>
             </form>
+            </div>
           </div>
         </div>
       )}
