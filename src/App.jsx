@@ -13,8 +13,20 @@ const AppLayout = ({ children }) => {
     "/admin",
     "/account",
     "/supplier",
+    "/planner",
+    "/order",
+    "/manager",
+
   ];
-  const hideFooterPaths = ["/admin", "/account", "/supplier"];
+  const hideFooterPaths = [
+    "/admin",
+    "/account",
+    "/supplier",
+    "/planner",
+    "/order",
+    "/manager",
+
+  ];
   return (
     <>
       {!hideNavbarPaths.includes(location.pathname) && <Navbar />}
