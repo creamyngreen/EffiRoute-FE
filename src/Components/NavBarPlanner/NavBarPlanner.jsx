@@ -55,7 +55,7 @@ function NavBarPlanner() {
 
           {/* Dropdown Menu */}
           {isDropdownOpen && (
-            <div className="absolute top-12 right-0 z-50 my-4 text-base list-none bg-white divide-y divide-gray-100 rounded-lg shadow">
+            <div className="absolute top-12 right-0 z-50 my-4 text-base list-none bg-white divide-y divide-gray-100 rounded-lg shadow-md">
               <div className="px-4 py-3">
                 <span className="block text-xl font-semibold from-neutral-200 text-gray-900">
                   Nguyen Toan Khang
@@ -65,7 +65,7 @@ function NavBarPlanner() {
                 </span>
                 <div className="flex space-x-2 mt-3">
                   <div className="border border-primary rounded px-2 py-0.5 text-xs text-primary">
-                    Owner
+                    Planner
                   </div>
                   <div className="border border-gray-300 rounded px-2 py-0.5 text-xs text-gray-500">
                     Free
@@ -122,7 +122,7 @@ function NavBarPlanner() {
                 href="/order"
                 className="block py-2 px-3  text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-orange-500 md:p-0 "
               >
-                Delivery
+                Optimization
               </a>
             </li>
           </ul>
