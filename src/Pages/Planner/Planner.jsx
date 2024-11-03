@@ -116,7 +116,7 @@ const initialDataSource = Array.from({ length: 46 }).map((_, i) => ({
       ? "Approved"
       : i % 4 === 2
       ? "Rejected"
-      : "Pending", 
+      : "Pending",
   priority: i % 2 === 0 ? "High" : "Low",
   deadline: `2023-12-${(i % 30) + 1}`,
   createdDate: `2023-11-${(i % 30) + 1}`,
@@ -124,7 +124,7 @@ const initialDataSource = Array.from({ length: 46 }).map((_, i) => ({
 
 const Planner = () => {
   const { RangePicker } = DatePicker;
-  const [dataSource, setDataSource] = useState(initialDataSource); 
+  const [dataSource, setDataSource] = useState(initialDataSource);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [rowsToDisplay, setRowsToDisplay] = useState(dataSource.length);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -136,13 +136,13 @@ const Planner = () => {
   const [street, setStreet] = useState("");
   const [city, setCity] = useState("");
   const [ward, setWard] = useState("");
-  const [isUploadModalVisible, setIsUploadModalVisible] = useState(false); 
+  const [isUploadModalVisible, setIsUploadModalVisible] = useState(false);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
-  const [editData, setEditData] = useState([]); 
-  const [singleEditPlan, setSingleEditPlan] = useState(null); 
-  const [demandInput, setDemandInput] = useState(""); 
-  const [priorityInput, setPriorityInput] = useState("Low"); 
-  const [deadlineInput, setDeadlineInput] = useState(""); 
+  const [editData, setEditData] = useState([]);
+  const [singleEditPlan, setSingleEditPlan] = useState(null);
+  const [demandInput, setDemandInput] = useState("");
+  const [priorityInput, setPriorityInput] = useState("Low");
+  const [deadlineInput, setDeadlineInput] = useState("");
 
   const onSelectChange = (newSelectedRowKeys) => {
     console.log("selectedRowKeys changed: ", newSelectedRowKeys);
@@ -156,7 +156,7 @@ const Planner = () => {
 
   const showModal = () => {
     setIsModalVisible(true);
-    setIsUploadModalVisible(false); 
+    setIsUploadModalVisible(false);
   };
 
   const handleCloseModal = () => {
@@ -184,22 +184,28 @@ const Planner = () => {
       return;
     }
 
-    const sessionToken = "your_unique_session_token"; // Generate a unique session token for each session
     const response = await fetch(
-      `https://maps.gomaps.pro/maps/api/place/autocomplete/json?input=${input}&key=${API_KEY}&components=country:vn&sessiontoken=${sessionToken}`
+      `https://maps.gomaps.pro/maps/api/place/autocomplete/json?input=${input}&key=${API_KEY}&components=country:vn`
     );
     const data = await response.json();
-    setPredictions(data.predictions || []); // Update predictions state
+    setPredictions(data.predictions || []); 
   };
 
-  // Handle input change
+
   const handleDestinationChange = (event) => {
     const value = event.target.value;
     setDestination(value); // Update destination state
     fetchPredictions(value); // Fetch predictions based on input
   };
 
-  // Function to handle adding a new plan
+  const resetFormFields = () => {
+    setDemandInput("");
+    setDestination("");
+    setDeadlineInput("");
+    setPriorityInput("Low");
+  };
+
+
   const handleAddOneDirectly = () => {
     const newPlan = {
       key: dataSource.length,
@@ -212,15 +218,15 @@ const Planner = () => {
       createdDate: new Date().toISOString().split("T")[0],
     };
 
-    // Update dataSource with the new plan using setDataSource
     setDataSource((prevData) => [...prevData, newPlan]);
     setIsModalVisible(false);
-    setIsSecondModalVisible(true);
+    setIsSecondModalVisible(false);
+    resetFormFields(); 
   };
 
   const showUploadModal = () => {
     setIsUploadModalVisible(true);
-    setIsModalVisible(false); 
+    setIsModalVisible(false);
   };
 
   const handleCloseUploadModal = () => {
@@ -241,9 +247,9 @@ const Planner = () => {
       notification.warning({
         message: "Please choose your plan",
         description: "You need to select at least one plan to edit.",
-        placement: "topRight", 
+        placement: "topRight",
       });
-      return; 
+      return;
     }
 
     const selectedPlans = dataSource.filter((item) =>
@@ -251,7 +257,12 @@ const Planner = () => {
     );
     setEditData(selectedPlans); // Set the data to be edited
     setSingleEditPlan(selectedPlans[0]); // Set the first selected plan for editing
-    setIsEditModalVisible(true); 
+    setIsEditModalVisible(true);
+  };
+
+  const handleShowAddOneModal = () => {
+    setIsModalVisible(false);
+    setIsSecondModalVisible(true);
   };
 
   return (
@@ -479,15 +490,19 @@ const Planner = () => {
               <div className="inline-flex rounded-md shadow-sm " role="group">
                 <button
                   type="button"
-                  className={`flex-1 px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-s-lg focus:font-bold hover:bg-gray-100 hover:text-primary focus:z-10 focus:ring-2 focus:ring-primary focus:text-primary ${priorityInput === 'Low' ? 'bg-gray-200' : ''}`}
-                  onClick={() => setPriorityInput('Low')} 
+                  className={`flex-1 px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-s-lg focus:font-bold hover:bg-gray-100 hover:text-primary focus:z-10 focus:ring-2 focus:ring-primary focus:text-primary ${
+                    priorityInput === "Low" ? "bg-gray-200" : ""
+                  }`}
+                  onClick={() => setPriorityInput("Low")}
                 >
                   Low
                 </button>
                 <button
                   type="button"
-                  className={`flex-1 px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 focus:font-bold hover:bg-gray-100 rounded-e-lg hover:text-primary focus:z-10 focus:ring-2 focus:ring-primary focus:text-primary ${priorityInput === 'High' ? 'bg-gray-200' : ''}`}
-                  onClick={() => setPriorityInput('High')} 
+                  className={`flex-1 px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 focus:font-bold hover:bg-gray-100 rounded-e-lg hover:text-primary focus:z-10 focus:ring-2 focus:ring-primary focus:text-primary ${
+                    priorityInput === "High" ? "bg-gray-200" : ""
+                  }`}
+                  onClick={() => setPriorityInput("High")}
                 >
                   High
                 </button>
@@ -587,7 +602,7 @@ const Planner = () => {
               </button>
               <button
                 className="flex flex-col items-center bg-white text-gray-600 w-72 h-48 px-4 py-2 justify-center rounded border border-gray-300 hover:border-blue-500"
-                onClick={handleAddOneDirectly}
+                onClick={handleShowAddOneModal}
               >
                 <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
                   <IoIosCreate className="text-blue-500 text-3xl" />
@@ -625,19 +640,21 @@ const Planner = () => {
                   type="date"
                   value={new Date().toISOString().split("T")[0]} // Set current date
                   className="border mt-2 border-gray-300 rounded p-2 w-full mb-4"
-                  readOnly 
+                  readOnly
                 />
                 <label>Deadline</label>
                 <DatePicker
-                  onChange={(date, dateString) => setDeadlineInput(dateString)} 
+                  onChange={(date, dateString) => setDeadlineInput(dateString)}
                   className="border mt-2 border-gray-300 rounded p-2 w-full mb-4"
                   placeholder="Select your deadline"
-                  required 
+                  required
                 />
                 <label>Demand</label>
                 <input
                   type="text"
-                  required 
+                  required
+                  value={demandInput}
+                  onChange={(e) => setDemandInput(e.target.value)}
                   className="border mt-2 border-gray-300 rounded p-2 w-full mb-4"
                   placeholder="Enter your demand"
                 />
@@ -650,14 +667,14 @@ const Planner = () => {
                   <button
                     type="button"
                     className={`flex-1 px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-s-lg focus:font-bold hover:bg-gray-100 hover:text-primary focus:z-10 focus:ring-2 focus:ring-primary focus:text-primary`}
-                    onClick={() => setPriorityInput('Low')} // Update state on click
+                    onClick={() => setPriorityInput("Low")} 
                   >
                     Low
                   </button>
                   <button
                     type="button"
                     className={`flex-1 px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 focus:font-bold hover:bg-gray-100 rounded-e-lg hover:text-primary focus:z-10 focus:ring-2 focus:ring-primary focus:text-primary`}
-                    onClick={() => setPriorityInput('High')} // Update state on click
+                    onClick={() => setPriorityInput("High")} 
                   >
                     High
                   </button>
@@ -665,7 +682,7 @@ const Planner = () => {
                 <label>Destination</label>
                 <input
                   type="text"
-                  required // Mark as required
+                  required 
                   value={destination}
                   onChange={(event) => {
                     const value = event.target.value;
@@ -682,8 +699,8 @@ const Planner = () => {
                         key={prediction.place_id}
                         className="p-2 hover:bg-gray-100 cursor-pointer"
                         onClick={() => {
-                          setDestination(prediction.description); 
-                          setPredictions([]); 
+                          setDestination(prediction.description);
+                          setPredictions([]);
                         }}
                       >
                         {prediction.description}
@@ -694,7 +711,10 @@ const Planner = () => {
                 <div className="flex justify-end mt-4">
                   <button
                     type="button"
-                    onClick={() => setIsSecondModalVisible(false)}
+                    onClick={() => {
+                      setIsSecondModalVisible(false);
+                      resetFormFields(); // Reset form fields when closing modal
+                    }}
                     className="mr-4 w-16 font-medium text-gray-400 border border-gray-300 px-4 py-2 rounded-lg flex justify-center items-center"
                   >
                     Close
@@ -704,7 +724,6 @@ const Planner = () => {
                     className="bg-primary/50 w-32 font-medium text-white px-4 py-2 rounded-lg flex justify-center items-center hover:bg-primary"
                     onClick={(e) => {
                       e.preventDefault();
-                      
                       // Validation check
                       if (!demandInput || !destination || !deadlineInput) {
                         notification.warning({
@@ -712,11 +731,10 @@ const Planner = () => {
                           description: "Please fill in all required fields.",
                           placement: "topRight",
                         });
-                        return; 
+                        return;
                       }
 
-                      handleAddOneDirectly(); 
-                      setIsSecondModalVisible(false);
+                      handleAddOneDirectly();
                     }}
                   >
                     Add
@@ -799,7 +817,7 @@ const Planner = () => {
                       setSingleEditPlan({
                         ...singleEditPlan,
                         demand: e.target.value,
-                      }); 
+                      });
                     }}
                   />
                   <label>Destination</label>
@@ -811,7 +829,7 @@ const Planner = () => {
                       setSingleEditPlan({
                         ...singleEditPlan,
                         destination: e.target.value,
-                      }); 
+                      });
                     }}
                   />
                   <label>Status</label>
@@ -839,7 +857,7 @@ const Planner = () => {
                       setSingleEditPlan({
                         ...singleEditPlan,
                         priority: e.target.value,
-                      }); 
+                      });
                     }}
                   >
                     <option value="Low">Low</option>
@@ -854,7 +872,7 @@ const Planner = () => {
                       setSingleEditPlan({
                         ...singleEditPlan,
                         deadline: e.target.value,
-                      }); 
+                      });
                     }}
                   />
                   <label>Created Date</label>
@@ -866,7 +884,7 @@ const Planner = () => {
                       setSingleEditPlan({
                         ...singleEditPlan,
                         createdDate: e.target.value,
-                      }); 
+                      });
                     }}
                   />
                 </div>
@@ -892,7 +910,7 @@ const Planner = () => {
                           : item
                       )
                     );
-                    setIsEditModalVisible(false); 
+                    setIsEditModalVisible(false);
                   }}
                 >
                   Save
