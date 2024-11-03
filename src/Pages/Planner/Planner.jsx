@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import NavBarPlanner from "../../Components/NavBarPlanner/NavBarPlanner";
 import { FaPlus } from "react-icons/fa6";
 import { FaArrowDown } from "react-icons/fa";
@@ -13,7 +13,7 @@ import { IoIosCreate } from "react-icons/io";
 import { IoMdClose } from "react-icons/io";
 import { FaFileUpload } from "react-icons/fa";
 import { API_KEY } from "../../config";
-
+import moment from "moment";
 const getStatusTag = (status) => {
   switch (status) {
     case "Completed":
@@ -74,6 +74,14 @@ const columns = [
     dataIndex: "id",
   },
   {
+    title: "Created Date",
+    dataIndex: "createdDate",
+  },
+  {
+    title: "Deadline",
+    dataIndex: "deadline",
+  },
+  {
     title: "Demand",
     dataIndex: "demand",
   },
@@ -82,22 +90,14 @@ const columns = [
     dataIndex: "destination",
   },
   {
-    title: "Status",
-    dataIndex: "status",
-    render: (text) => getStatusTag(text),
-  },
-  {
     title: "Priority",
     dataIndex: "priority",
     render: (text) => getPriorityTag(text),
   },
   {
-    title: "Deadline",
-    dataIndex: "deadline",
-  },
-  {
-    title: "Created Date",
-    dataIndex: "createdDate",
+    title: "Status",
+    dataIndex: "status",
+    render: (text) => getStatusTag(text),
   },
 ];
 
@@ -141,8 +141,13 @@ const Planner = () => {
   const [editData, setEditData] = useState([]);
   const [singleEditPlan, setSingleEditPlan] = useState(null);
   const [demandInput, setDemandInput] = useState("");
-  const [priorityInput, setPriorityInput] = useState("Low");
+  const [priorityInput, setPriorityInput] = useState(null);
+  const [modalPriorityInput, setModalPriorityInput] = useState(null);
   const [deadlineInput, setDeadlineInput] = useState("");
+  const [isFormSubmitted, setIsFormSubmitted] = useState(false);
+  const [activeButton, setActiveButton] = useState(null);
+  const [activeTimeFrame, setActiveTimeFrame] = useState(null);
+  const [activeStatus, setActiveStatus] = useState(null);
 
   const onSelectChange = (newSelectedRowKeys) => {
     console.log("selectedRowKeys changed: ", newSelectedRowKeys);
@@ -188,9 +193,8 @@ const Planner = () => {
       `https://maps.gomaps.pro/maps/api/place/autocomplete/json?input=${input}&key=${API_KEY}&components=country:vn`
     );
     const data = await response.json();
-    setPredictions(data.predictions || []); 
+    setPredictions(data.predictions || []);
   };
-
 
   const handleDestinationChange = (event) => {
     const value = event.target.value;
@@ -205,7 +209,6 @@ const Planner = () => {
     setPriorityInput("Low");
   };
 
-
   const handleAddOneDirectly = () => {
     const newPlan = {
       key: dataSource.length,
@@ -213,7 +216,7 @@ const Planner = () => {
       demand: demandInput,
       destination: destination,
       status: "Draft",
-      priority: priorityInput,
+      priority: modalPriorityInput,
       deadline: deadlineInput,
       createdDate: new Date().toISOString().split("T")[0],
     };
@@ -221,7 +224,7 @@ const Planner = () => {
     setDataSource((prevData) => [...prevData, newPlan]);
     setIsModalVisible(false);
     setIsSecondModalVisible(false);
-    resetFormFields(); 
+    resetFormFields();
   };
 
   const showUploadModal = () => {
@@ -263,6 +266,11 @@ const Planner = () => {
   const handleShowAddOneModal = () => {
     setIsModalVisible(false);
     setIsSecondModalVisible(true);
+    setIsFormSubmitted(false); // Reset form submitted state
+  };
+
+  const handleButtonClick = (buttonName) => {
+    setActiveButton(buttonName); // Set the active button
   };
 
   return (
@@ -302,31 +310,55 @@ const Planner = () => {
         <div className="inline-flex rounded-md shadow-sm mb-4" role="group">
           <button
             type="button"
-            className="px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-s-lg focus:font-bold hover:bg-gray-100 hover:text-primary focus:z-10 focus:ring-2 focus:ring-primary focus:text-primary"
+            className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-s-lg  ${
+              activeButton === "view" ? "bg-gray-100 text-primary" : ""
+            }`}
+            onClick={() => handleButtonClick("view")}
           >
             View Entire Plans
           </button>
           <button
             type="button"
-            className="px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 focus:font-bold hover:bg-gray-100 hover:text-primary focus:z-10 focus:ring-2 focus:ring-primary focus:text-primary"
+            className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200   ${
+              activeButton === "draft" ? "bg-gray-100 text-primary" : ""
+            }`}
+            onClick={() => handleButtonClick("draft")}
+          >
+            View Draft Plans
+          </button>
+          <button
+            type="button"
+            className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 ${
+              activeButton === "pending" ? "bg-gray-100 text-primary" : ""
+            }`}
+            onClick={() => handleButtonClick("pending")}
           >
             Manage Pending Plans
           </button>
           <button
             type="button"
-            className="px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 focus:font-bold hover:bg-gray-100 hover:text-primary focus:z-10 focus:ring-2 focus:ring-primary focus:text-primary"
+            className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200   ${
+              activeButton === "approved" ? "bg-gray-100 text-primary" : ""
+            }`}
+            onClick={() => handleButtonClick("approved")}
           >
             Manage Approved Plans
           </button>
           <button
             type="button"
-            className="px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 focus:font-bold hover:bg-gray-100 hover:text-primary focus:z-10 focus:ring-2 focus:ring-primary focus:text-primary"
+            className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200   ${
+              activeButton === "completed" ? "bg-gray-100 text-primary" : ""
+            }`}
+            onClick={() => handleButtonClick("completed")}
           >
             Manage Completed Plans
           </button>
           <button
             type="button"
-            className="px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-e-lg focus:font-bold hover:bg-gray-100 hover:text-primary focus:z-10 focus:ring-2 focus:ring-primary focus:text-primary"
+            className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-e-lg  ${
+              activeButton === "rejected" ? "bg-gray-100 text-primary" : ""
+            }`}
+            onClick={() => handleButtonClick("rejected")}
           >
             Manage Rejected Plans
           </button>
@@ -349,7 +381,7 @@ const Planner = () => {
                 <input
                   type="search"
                   id="default-search"
-                  className="block w-full p-2 ps-10 text-sm text-[#8F96A9] border border-gray-300 rounded-lg bg-gray-50 focus:ring-primary focus:border-primary"
+                  className="block w-full p-2 ps-10 text-sm text-[#8F96A9] border border-gray-300 rounded-lg bg-gray-50 "
                   placeholder="Please enter your ID plans, destination, etc."
                 />
               </div>
@@ -385,7 +417,7 @@ const Planner = () => {
 
               <div className="relative">
                 <select className="border border-gray-300 text-sm px-4 py-2 pr-10 rounded-md focus:outline-none appearance-none">
-                  <option>Planned Date</option>
+                  <option>Created Date</option>
                   <option>Deadline</option>
                 </select>
                 <IoMdArrowDropdown className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500, text-[1.8rem] mt-1" />
@@ -394,25 +426,37 @@ const Planner = () => {
               <div className="inline-flex rounded-md shadow-sm " role="group">
                 <button
                   type="button"
-                  className="px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-s-lg focus:font-bold hover:bg-gray-100 hover:text-primary focus:z-10 focus:ring-2 focus:ring-primary focus:text-primary"
+                  className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-s-lg ${
+                    activeTimeFrame === "today" ? "bg-orange-100 text-primary border-primary" : ""
+                  }`}
+                  onClick={() => setActiveTimeFrame("today")}
                 >
                   Today
                 </button>
                 <button
                   type="button"
-                  className="px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 focus:font-bold hover:bg-gray-100 hover:text-primary focus:z-10 focus:ring-2 focus:ring-primary focus:text-primary"
+                  className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 ${
+                    activeTimeFrame === "1week" ? "bg-orange-100 text-primary border-primary" : ""
+                  }`}
+                  onClick={() => setActiveTimeFrame("1week")}
                 >
                   1 Week
                 </button>
                 <button
                   type="button"
-                  className="px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 focus:font-bold hover:bg-gray-100 hover:text-primary focus:z-10 focus:ring-2 focus:ring-primary focus:text-primary"
+                  className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 ${
+                    activeTimeFrame === "1month" ? "bg-orange-100 text-primary border-primary" : ""
+                  }`}
+                  onClick={() => setActiveTimeFrame("1month")}
                 >
                   1 Month
                 </button>
                 <button
                   type="button"
-                  className="px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 focus:font-bold hover:bg-gray-100 rounded-e-lg hover:text-primary focus:z-10 focus:ring-2 focus:ring-primary focus:text-primary"
+                  className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-e-lg ${
+                    activeTimeFrame === "3months" ? "bg-orange-100 text-primary border-primary" : ""
+                  }`}
+                  onClick={() => setActiveTimeFrame("3months")}
                 >
                   3 Months
                 </button>
@@ -442,31 +486,46 @@ const Planner = () => {
               <div className="inline-flex rounded-md shadow-sm " role="group">
                 <button
                   type="button"
-                  className="px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-s-lg focus:font-bold hover:bg-gray-100 hover:text-primary focus:z-10 focus:ring-2 focus:ring-primary focus:text-primary"
+                  className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-s-lg ${
+                    activeStatus === "draft" ? "bg-orange-100 text-primary border-primary" : ""
+                  }`}
+                  onClick={() => setActiveStatus("draft")}
                 >
                   Draft
                 </button>
                 <button
                   type="button"
-                  className="px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-s-lg focus:font-bold hover:bg-gray-100 hover:text-primary focus:z-10 focus:ring-2 focus:ring-primary focus:text-primary"
+                  className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 ${
+                    activeStatus === "pending" ? "bg-orange-100 text-primary border-primary" : ""
+                  }`}
+                  onClick={() => setActiveStatus("pending")}
                 >
                   Pending
                 </button>
                 <button
                   type="button"
-                  className="px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 focus:font-bold hover:bg-gray-100 hover:text-primary focus:z-10 focus:ring-2 focus:ring-primary focus:text-primary"
+                  className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 ${
+                    activeStatus === "approved" ? "bg-orange-100 text-primary border-primary" : ""
+                  }`}
+                  onClick={() => setActiveStatus("approved")}
                 >
                   Approved
                 </button>
                 <button
                   type="button"
-                  className="px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 focus:font-bold hover:bg-gray-100 hover:text-primary focus:z-10 focus:ring-2 focus:ring-primary focus:text-primary"
+                  className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 ${
+                    activeStatus === "rejected" ? "bg-orange-100 text-primary border-primary" : ""
+                  }`}
+                  onClick={() => setActiveStatus("rejected")}
                 >
                   Rejected
                 </button>
                 <button
                   type="button"
-                  className="px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 focus:font-bold hover:bg-gray-100 rounded-e-lg hover:text-primary focus:z-10 focus:ring-2 focus:ring-primary focus:text-primary"
+                  className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-e-lg ${
+                    activeStatus === "completed" ? "bg-orange-100 text-primary border-primary" : ""
+                  }`}
+                  onClick={() => setActiveStatus("completed")}
                 >
                   Completed
                 </button>
@@ -490,8 +549,8 @@ const Planner = () => {
               <div className="inline-flex rounded-md shadow-sm " role="group">
                 <button
                   type="button"
-                  className={`flex-1 px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-s-lg focus:font-bold hover:bg-gray-100 hover:text-primary focus:z-10 focus:ring-2 focus:ring-primary focus:text-primary ${
-                    priorityInput === "Low" ? "bg-gray-200" : ""
+                  className={`flex-1 px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-s-lg ${
+                    priorityInput === "Low" ? "bg-orange-100 text-primary border-primary" : ""
                   }`}
                   onClick={() => setPriorityInput("Low")}
                 >
@@ -499,8 +558,8 @@ const Planner = () => {
                 </button>
                 <button
                   type="button"
-                  className={`flex-1 px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 focus:font-bold hover:bg-gray-100 rounded-e-lg hover:text-primary focus:z-10 focus:ring-2 focus:ring-primary focus:text-primary ${
-                    priorityInput === "High" ? "bg-gray-200" : ""
+                  className={`flex-1 px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-e-lg  ${
+                    priorityInput === "High" ? "bg-orange-100 text-primary border-primary" : ""
                   }`}
                   onClick={() => setPriorityInput("High")}
                 >
@@ -627,14 +686,11 @@ const Planner = () => {
               </h1>
             </div>
             <hr className="my-5" />
-            <div
-              className="px-8 pb-8 overflow-y-auto "
-              style={{ maxHeight: "40rem" }}
-            >
+            <div className="px-8 pb-8">
               <h2 className="text-xl text-left font-bold mb-5">
                 Plan Information
               </h2>
-              <form>
+              <form className="overflow-hidden">
                 <label>Plan Creation Date</label>
                 <input
                   type="date"
@@ -645,7 +701,9 @@ const Planner = () => {
                 <label>Deadline</label>
                 <DatePicker
                   onChange={(date, dateString) => setDeadlineInput(dateString)}
-                  className="border mt-2 border-gray-300 rounded p-2 w-full mb-4"
+                  className={`border mt-2 border-gray-300 rounded p-2 w-full mb-4 ${
+                    isFormSubmitted && !deadlineInput ? "border-red-500" : ""
+                  }`} // Highlight if empty on submit
                   placeholder="Select your deadline"
                   required
                 />
@@ -655,7 +713,9 @@ const Planner = () => {
                   required
                   value={demandInput}
                   onChange={(e) => setDemandInput(e.target.value)}
-                  className="border mt-2 border-gray-300 rounded p-2 w-full mb-4"
+                  className={`border mt-2 border-gray-300 rounded p-2 w-full mb-4 ${
+                    isFormSubmitted && !demandInput ? "border-red-500" : ""
+                  }`} // Highlight if empty on submit
                   placeholder="Enter your demand"
                 />
 
@@ -666,15 +726,19 @@ const Planner = () => {
                 >
                   <button
                     type="button"
-                    className={`flex-1 px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-s-lg focus:font-bold hover:bg-gray-100 hover:text-primary focus:z-10 focus:ring-2 focus:ring-primary focus:text-primary`}
-                    onClick={() => setPriorityInput("Low")} 
+                    className={`flex-1 px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-s-lg ${
+                      modalPriorityInput === "Low" ? "bg-orange-100 text-primary border-primary" : ""
+                    }`}
+                    onClick={() => setModalPriorityInput("Low")}
                   >
                     Low
                   </button>
                   <button
                     type="button"
-                    className={`flex-1 px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 focus:font-bold hover:bg-gray-100 rounded-e-lg hover:text-primary focus:z-10 focus:ring-2 focus:ring-primary focus:text-primary`}
-                    onClick={() => setPriorityInput("High")} 
+                    className={`flex-1 px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-e-lg ${
+                      modalPriorityInput === "High" ? "bg-orange-100 text-primary border-primary" : ""
+                    }`}
+                    onClick={() => setModalPriorityInput("High")}
                   >
                     High
                   </button>
@@ -682,18 +746,20 @@ const Planner = () => {
                 <label>Destination</label>
                 <input
                   type="text"
-                  required 
+                  required
                   value={destination}
                   onChange={(event) => {
                     const value = event.target.value;
                     setDestination(value); // Update destination state directly
                     fetchPredictions(value); // Fetch predictions based on input
                   }}
-                  className="border mt-2 border-gray-300 rounded p-2 w-full mb-1"
+                  className={`border mt-2 border-gray-300 rounded p-2 w-full mb-1 ${
+                    isFormSubmitted && !destination ? "border-red-500" : ""
+                  }`} // Highlight if empty on submit
                   placeholder="Enter your destination"
                 />
                 {predictions.length > 0 && (
-                  <ul className="border border-gray-300 rounded mt-2">
+                  <ul className="border border-gray-300 rounded mt-2 max-h-40 overflow-y-auto">
                     {predictions.map((prediction) => (
                       <li
                         key={prediction.place_id}
@@ -714,6 +780,7 @@ const Planner = () => {
                     onClick={() => {
                       setIsSecondModalVisible(false);
                       resetFormFields(); // Reset form fields when closing modal
+                      setIsFormSubmitted(false); // Reset form submitted state
                     }}
                     className="mr-4 w-16 font-medium text-gray-400 border border-gray-300 px-4 py-2 rounded-lg flex justify-center items-center"
                   >
@@ -724,6 +791,7 @@ const Planner = () => {
                     className="bg-primary/50 w-32 font-medium text-white px-4 py-2 rounded-lg flex justify-center items-center hover:bg-primary"
                     onClick={(e) => {
                       e.preventDefault();
+                      setIsFormSubmitted(true); // Set form submitted state
                       // Validation check
                       if (!demandInput || !destination || !deadlineInput) {
                         notification.warning({
@@ -808,11 +876,43 @@ const Planner = () => {
             <form>
               {singleEditPlan && (
                 <div className="mb-4">
+                  <label>Plan Creation Date</label>
+                  <DatePicker
+                    defaultValue={
+                      singleEditPlan.createdDate
+                        ? moment(singleEditPlan.createdDate)
+                        : null
+                    }
+                    className="border mt-2 border-gray-300 rounded p-2 w-full mb-2"
+                    onChange={(date, dateString) => {
+                      setSingleEditPlan({
+                        ...singleEditPlan,
+                        createdDate: dateString,
+                      });
+                    }}
+                  />
+                  <label>Deadline</label>
+                  <DatePicker
+                    defaultValue={
+                      singleEditPlan.deadline
+                        ? moment(singleEditPlan.deadline)
+                        : null
+                    }
+                    className="border mt-2 border-gray-300 rounded p-2 w-full mb-2"
+                    onChange={(date, dateString) => {
+                      setSingleEditPlan({
+                        ...singleEditPlan,
+                        deadline: dateString,
+                      });
+                    }}
+                  />
                   <label>Demand</label>
                   <input
                     type="text"
                     defaultValue={singleEditPlan.demand}
-                    className="border mt-2 border-gray-300 rounded p-2 w-full mb-2"
+                    className={`border mt-2 border-gray-300 rounded p-2 w-full mb-2 ${
+                      !singleEditPlan.demand ? "border-red-500" : ""
+                    }`}
                     onChange={(e) => {
                       setSingleEditPlan({
                         ...singleEditPlan,
@@ -820,73 +920,65 @@ const Planner = () => {
                       });
                     }}
                   />
+                  <label>Priority</label>
+                  <div
+                    className="mt-2 mb-4 rounded-md shadow-sm w-full flex"
+                    role="group"
+                  >
+                    <button
+                      type="button"
+                      className={`flex-1 px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-s-lg ${
+                        singleEditPlan.priority === "Low" ? "bg-orange-100 text-primary border-primary" : ""
+                      }`}
+                      onClick={() => setSingleEditPlan({ ...singleEditPlan, priority: "Low" })}
+                    >
+                      Low
+                    </button>
+                    <button
+                      type="button"
+                      className={`flex-1 px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-e-lg ${
+                        singleEditPlan.priority === "High" ? "bg-orange-100 text-primary border-primary" : ""
+                      }`}
+                      onClick={() => setSingleEditPlan({ ...singleEditPlan, priority: "High" })}
+                    >
+                      High
+                    </button>
+                  </div>
                   <label>Destination</label>
                   <input
                     type="text"
-                    defaultValue={singleEditPlan.destination}
-                    className="border mt-2 border-gray-300 rounded p-2 w-full mb-2"
-                    onChange={(e) => {
+                    required
+                    value={singleEditPlan.destination}
+                    onChange={(event) => {
+                      const value = event.target.value;
                       setSingleEditPlan({
                         ...singleEditPlan,
-                        destination: e.target.value,
+                        destination: value,
                       });
+                      fetchPredictions(value);
                     }}
+                    className="border mt-2 border-gray-300 rounded p-2 w-full mb-1"
+                    placeholder="Enter your destination"
                   />
-                  <label>Status</label>
-                  <select
-                    defaultValue={singleEditPlan.status}
-                    className="border mt-2 border-gray-300 rounded p-2 w-full mb-2"
-                    onChange={(e) => {
-                      setSingleEditPlan({
-                        ...singleEditPlan,
-                        status: e.target.value,
-                      }); // Update status
-                    }}
-                  >
-                    <option value="Draft">Draft</option>
-                    <option value="Pending">Pending</option>
-                    <option value="Approved">Approved</option>
-                    <option value="Rejected">Rejected</option>
-                    <option value="Completed">Completed</option>
-                  </select>
-                  <label>Priority</label>
-                  <select
-                    defaultValue={singleEditPlan.priority}
-                    className="border mt-2 border-gray-300 rounded p-2 w-full mb-2"
-                    onChange={(e) => {
-                      setSingleEditPlan({
-                        ...singleEditPlan,
-                        priority: e.target.value,
-                      });
-                    }}
-                  >
-                    <option value="Low">Low</option>
-                    <option value="High">High</option>
-                  </select>
-                  <label>Deadline</label>
-                  <input
-                    type="date"
-                    defaultValue={singleEditPlan.deadline}
-                    className="border mt-2 border-gray-300 rounded p-2 w-full mb-2"
-                    onChange={(e) => {
-                      setSingleEditPlan({
-                        ...singleEditPlan,
-                        deadline: e.target.value,
-                      });
-                    }}
-                  />
-                  <label>Created Date</label>
-                  <input
-                    type="date"
-                    defaultValue={singleEditPlan.createdDate}
-                    className="border mt-2 border-gray-300 rounded p-2 w-full mb-2"
-                    onChange={(e) => {
-                      setSingleEditPlan({
-                        ...singleEditPlan,
-                        createdDate: e.target.value,
-                      });
-                    }}
-                  />
+                  {predictions.length > 0 && (
+                    <ul className="border border-gray-300 rounded mt-2 max-h-40 overflow-y-auto">
+                      {predictions.map((prediction) => (
+                        <li
+                          key={prediction.place_id}
+                          className="p-2 hover:bg-gray-100 cursor-pointer"
+                          onClick={() => {
+                            setSingleEditPlan({
+                              ...singleEditPlan,
+                              destination: prediction.description,
+                            });
+                            setPredictions([]);
+                          }}
+                        >
+                          {prediction.description}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               )}
               <div className="flex justify-end mt-4">
@@ -902,6 +994,19 @@ const Planner = () => {
                   className="bg-primary/50 w-32 font-medium text-white px-4 py-2 rounded-lg flex justify-center items-center hover:bg-primary"
                   onClick={(e) => {
                     e.preventDefault();
+                    // Validation check
+                    if (
+                      !singleEditPlan.demand ||
+                      !singleEditPlan.destination ||
+                      !singleEditPlan.deadline
+                    ) {
+                      notification.warning({
+                        message: "Missing Fields",
+                        description: "Please fill in all required fields.",
+                        placement: "topRight",
+                      });
+                      return;
+                    }
                     // Logic to save edited plan back to dataSource
                     setDataSource((prevData) =>
                       prevData.map((item) =>
