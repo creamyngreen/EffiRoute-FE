@@ -25,6 +25,7 @@ const AppLayout = ({ children }) => {
     "/manager",
     "/monitor",
   ];
+  ];
   const hideFooterPaths = [
     "/admin",
     "/account",
@@ -33,8 +34,8 @@ const AppLayout = ({ children }) => {
     "/order",
     "/manager",
     "/monitor",
-  ];
 
+  ];
   return (
     <div>
       {!hideNavbarPaths.includes(location.pathname) && <Navbar />}

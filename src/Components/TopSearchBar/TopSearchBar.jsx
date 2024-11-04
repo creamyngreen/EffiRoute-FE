@@ -9,6 +9,15 @@ const TopSearchBar = () => {
   const user = useSelector((state) => state.account.userInfo);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+import React, { useState } from "react";
+import searchIcon from "../../assets/Admin/search.png";
+import menuIcon from "../../assets/Admin/menu.png";
+import notificationIcon from "../../assets/Planner/noti.png"; // Update the notification icon import if needed
+import face2 from "../../assets/Home/WhyChooseUs/face2.png";
+import { useSelector } from "react-redux";
+
+const TopSearchBar = () => {
+  const user = useSelector((state) => state.account.account);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const toggleDropdown = () => {
@@ -18,6 +27,7 @@ const TopSearchBar = () => {
     dispatch(doLogout());
     navigate("/");
   };
+
   return (
     <div className="flex items-center justify-between w-full p-4 font-nunito">
       {/* Left side*/}
@@ -38,15 +48,19 @@ const TopSearchBar = () => {
 
       {/* Right side */}
       <div className="flex items-center space-x-6">
-        {/* Notification Icon */}
-        <div className="relative">
+        {/* Notification Button */}
+        <button
+          type="button"
+          className="relative inline-flex items-center p-3 text-sm font-medium text-center text-white bg-blue-500 rounded-lg hover:bg-blue-600 focus:ring-2 focus:outline-none focus:ring-blue-700"
+        >
           <img
             src={notificationIcon}
-            alt="Notification"
-            className="w-8 h-8 cursor-pointer"
+            alt="Notifications"
+            className="w-4 h-4 filter invert contrast-200 brightness-200"
           />
+          <span className="sr-only">Notifications</span>
           {/* Notification Badge */}
-          <div className="absolute -top-2 -right-1.5 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+          <div className="absolute inline-flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-red-500 border-2 border-white rounded-full -top-2 -end-2">
             6
           </div>
         </div>
@@ -103,6 +117,72 @@ const TopSearchBar = () => {
             )}
           </div>
         </div>
+        </button>
+
+        {/* Profile Button and Dropdown */}
+        <button
+          type="button"
+          className="flex text-sm bg-gray-800 rounded-full focus:ring-4 focus:ring-gray-300"
+          onClick={toggleDropdown}
+        >
+          <span className="sr-only">Open user menu</span>
+          <img
+            className="w-12 h-12 rounded-full"
+            src={face2}
+            alt="User photo"
+          />
+        </button>
+
+        {/* Dropdown Menu */}
+        {isDropdownOpen && (
+          <div className="absolute top-14 right-5 z-50 my-4 text-base list-none bg-white divide-y divide-gray-100 rounded-lg shadow">
+            <div className="px-4 py-3">
+              {user && user.access_token ? (
+                <>
+                  <span className="block text-sm text-gray-900">
+                    {user.username}
+                  </span>
+                  <span className="block text-sm text-gray-500">
+                    {user.roles.name}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="block text-sm text-gray-900">Admin</span>
+                  <span className="block text-sm text-gray-500">
+                    21522195@gm.uit.edu.vn
+                  </span>
+                </>
+              )}
+            </div>
+            <ul className="py-2">
+              <li>
+                <a
+                  href="#"
+                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                >
+                  Dashboard
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#"
+                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                >
+                  Settings
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#"
+                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                >
+                  Sign out
+                </a>
+              </li>
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   );
