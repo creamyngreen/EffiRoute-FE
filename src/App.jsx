@@ -16,6 +16,7 @@ const AppLayout = ({ children }) => {
     "/planner",
     "/order",
     "/manager",
+    "/monitor",
 
   ];
   const hideFooterPaths = [
@@ -25,6 +26,7 @@ const AppLayout = ({ children }) => {
     "/planner",
     "/order",
     "/manager",
+    "/monitor",
 
   ];
   return (

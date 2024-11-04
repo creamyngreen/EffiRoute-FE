@@ -1,66 +1,161 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import NavBarManager from "../../Components/NavBarManager/NavBarManager";
-import filter from "../../assets/Admin/filter.png";
-import reset from "../../assets/Admin/reset.png";
+import { Table, Button } from "antd";
+import { RiExpandUpDownFill } from "react-icons/ri";
+
+// Function to get status tag
+const getStatusTag = (status) => {
+  switch (status) {
+    case "Completed":
+      return (
+        <span className="bg-green-200 text-green-800 px-2 py-1 rounded">
+          Completed
+        </span>
+      );
+    case "Approved":
+      return (
+        <span className="bg-blue-200 text-blue-800 px-2 py-1 rounded">
+          Approved
+        </span>
+      );
+    case "Draft":
+      return (
+        <span className="bg-gray-200 text-gray-800 px-2 py-1 rounded">
+          Draft
+        </span>
+      );
+    case "Rejected":
+      return (
+        <span className="bg-red-200 text-red-800 px-2 py-1 rounded">
+          Rejected
+        </span>
+      );
+    case "Pending":
+      return (
+        <span className="bg-yellow-200 text-yellow-800 px-2 py-1 rounded">
+          Pending
+        </span>
+      );
+    default:
+      return status;
+  }
+};
+
+// Function to get priority tag
+const getPriorityTag = (priority) => {
+  switch (priority) {
+    case "High":
+      return (
+        <span className="bg-red-200 text-red-800 px-2 py-1 rounded">High</span>
+      );
+    case "Low":
+      return (
+        <span className="bg-green-200 text-green-800 px-2 py-1 rounded">
+          Low
+        </span>
+      );
+    default:
+      return priority;
+  }
+};
+
+// Sample data for the summary table
+const initialDataSource = Array.from({ length: 50 }).map((_, i) => ({
+  key: i,
+  id: `ID-${i}`,
+  demand: `Demand ${i} tons`,
+  destination: `Destination ${i}`,
+  createdDate: `2023-11-${(i % 30) + 1}`,
+  deadline: `2023-12-${(i % 30) + 1}`,
+  status: i % 3 === 0 ? "Approved" : i % 3 === 1 ? "Rejected" : "Pending",
+  priority: i % 2 === 0 ? "High" : "Low",
+}));
 
 const Manager = () => {
-  const navigate = useNavigate();
+  const [dataSource, setDataSource] = useState(initialDataSource);
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [rowsToDisplay, setRowsToDisplay] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
 
-  // Sample data for procurement plans
-  const [procurementPlans, setProcurementPlans] = useState([
+  const columns = [
     {
-      id: "PP-1",
-      demand: "Office Supplies",
-      priority: "Medium",
-      deadline: "2024-11-01",
-      destination: "Headquarters",
-      status: "Pending",
+      title: "ID",
+      dataIndex: "id",
     },
     {
-      id: "PP-2",
-      demand: "New Laptops",
-      priority: "High",
-      deadline: "2024-11-05",
-      destination: "Branch Office",
-      status: "Pending",
+      title: "Demand",
+      dataIndex: "demand",
     },
     {
-      id: "PP-3",
-      demand: "Furniture",
-      priority: "Low",
-      deadline: "2024-12-01",
-      destination: "Warehouse",
-      status: "Pending",
+      title: "Destination",
+      dataIndex: "destination",
     },
-  ]);
+    {
+      title: "Created Date",
+      dataIndex: "createdDate",
+    },
+    {
+      title: "Deadline",
+      dataIndex: "deadline",
+    },
+    {
+      title: "Priority",
+      dataIndex: "priority",
+      render: (text) => getPriorityTag(text),
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      render: (text) => getStatusTag(text),
+    },
+    {
+      title: "Action",
+      render: (text, record) => (
+        <div>
+          <Button 
+            type="primary" 
+            onClick={() => handleStatusChange(record.key, "Approved")}
+          >
+            Approve
+          </Button>
+          <Button
+            type="danger"
+            className="border-gray-200 ml-4"
+            onClick={() => handleStatusChange(record.key, "Rejected")}
+          >
+            Reject
+          </Button>
+        </div>
+      ),
+    },
+  ];
 
-  const [filterStatus, setFilterStatus] = useState("");
+  // Calculate summary counts
+  const totalPlans = dataSource.length;
 
-  const handleApprove = (id) => {
-    setProcurementPlans((prevPlans) =>
-      prevPlans.map((plan) =>
-        plan.id === id ? { ...plan, status: "Approved" } : plan
+  const limitedDataSource =
+    rowsToDisplay === "all"
+      ? dataSource
+      : dataSource.slice(
+          (currentPage - 1) * rowsToDisplay,
+          currentPage * rowsToDisplay
+        );
+
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (newSelectedRowKeys) => {
+      setSelectedRowKeys(newSelectedRowKeys);
+    },
+  };
+
+  // Function to handle status change
+  const handleStatusChange = (key, newStatus) => {
+    setDataSource((prevData) => 
+      prevData.map((item) => 
+        item.key === key ? { ...item, status: newStatus } : item
       )
     );
   };
-
-  const handleReject = (id) => {
-    setProcurementPlans((prevPlans) =>
-      prevPlans.map((plan) =>
-        plan.id === id ? { ...plan, status: "Rejected" } : plan
-      )
-    );
-  };
-
-  const handleFilterReset = () => {
-    setFilterStatus("");
-  };
-
-  // Filtered procurement plans based on selected status
-  const filteredPlans = procurementPlans.filter((plan) => {
-    return filterStatus ? plan.status === filterStatus : true;
-  });
 
   return (
     <div>
@@ -70,115 +165,44 @@ const Manager = () => {
           Procurement Plans Management
         </h2>
 
-        {/* Filter Section */}
-        <div className="my-4">
-          <div className="flex items-center mb-2">
-            <img src={filter} alt="Filter" className="w-5 h-5 mr-2" />
-            <span className="mx-10 font-medium">Filter By Status</span>
+        {/* Plan Summary Section */}
+        <div className="flex space-x-4 items-center mb-4">
+          <span>Selected Plans: {selectedRowKeys.length}</span>
+          <span className="text-gray-400">|</span>
+          <span>Total Plans: {totalPlans}</span>
+          <div className="relative inline-flex items-center">
             <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="p-2 border border-gray-300 rounded-md"
+              className="border border-gray-300 text-sm px-4 py-2 pr-8 rounded-md focus:outline-none appearance-none"
+              onChange={(e) => {
+                const value = e.target.value;
+                setRowsToDisplay(value);
+                setCurrentPage(1); 
+              }}
             >
-              <option value="">All</option>
-              <option value="Approved">Approved</option>
-              <option value="Rejected">Rejected</option>
-              <option value="Pending">Pending</option>
+              <option value="all">View All</option>
+              <option value={10}>View 10 at a time</option>
+              <option value={20}>View 20 at a time</option>
+              <option value={30}>View 30 at a time</option>
+              <option value={40}>View 40 at a time</option>
+              <option value={50}>View 50 at a time</option>
             </select>
-            <button
-              onClick={handleFilterReset}
-              className="ml-4 text-red-500 px-4 py-2 rounded-lg flex items-center"
-            >
-              <img
-                src={reset}
-                alt="Reset"
-                className="inline-block w-4 h-4 mr-1"
-              />
-              Reset Filters
-            </button>
+            <RiExpandUpDownFill className="absolute right-2 pointer-events-none text-gray-500" />
           </div>
         </div>
 
-        {/* Procurement Plans Table */}
-        <h3 className="text-xl font-semibold mb-2 text-gray-700">
-          Procurement Plan Status
-        </h3>
-        <div className="overflow-x-auto mb-6">
-          <table className="w-full table-fixed border-collapse">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="py-2 px-4 border text-left font-semibold text-gray-700">
-                  ID
-                </th>
-                <th className="py-2 px-4 border text-left font-semibold text-gray-700">
-                  DEMAND
-                </th>
-                <th className="py-2 px-4 border text-left font-semibold text-gray-700">
-                  PRIORITY
-                </th>
-                <th className="py-2 px-4 border text-left font-semibold text-gray-700">
-                  DEADLINE
-                </th>
-                <th className="py-2 px-4 border text-left font-semibold text-gray-700">
-                  DESTINATION
-                </th>
-                <th className="py-2 px-4 border text-left font-semibold text-gray-700">
-                  STATUS
-                </th>
-                <th className="py-2 px-4 border text-left font-semibold text-gray-700">
-                  ACTIONS
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredPlans.map((plan) => (
-                <tr key={plan.id} className="text-gray-700 hover:bg-gray-50">
-                  <td className="py-2 px-4 border">{plan.id}</td>
-                  <td className="py-2 px-4 border">{plan.demand}</td>
-                  <td className="py-2 px-4 border">{plan.priority}</td>
-                  <td className="py-2 px-4 border">{plan.deadline}</td>
-                  <td className="py-2 px-4 border">{plan.destination}</td>
-                  <td className="py-2 px-4 border">{plan.status}</td>
-                  <td className="py-2 px-4 border">
-                    <button
-                      onClick={() => handleApprove(plan.id)}
-                      className="text-green-500 hover:underline mr-2"
-                    >
-                      Approve
-                    </button>
-                    <button
-                      onClick={() => handleReject(plan.id)}
-                      className="text-red-500 hover:underline"
-                    >
-                      Reject
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Charts Section */}
-        <div className="mt-6">
-          <h3 className="text-xl font-semibold mb-4 text-gray-700">Charts</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-4 border border-gray-300 rounded-lg shadow">
-              <h4 className="font-semibold mb-2">Transport Units Over Time</h4>
-              {/* Placeholder for Chart */}
-              <div className="h-48 bg-gray-200 flex items-center justify-center">
-                Chart Placeholder
-              </div>
-            </div>
-            <div className="p-4 border border-gray-300 rounded-lg shadow">
-              <h4 className="font-semibold mb-2">Amount Shipped Over Time</h4>
-              {/* Placeholder for Chart */}
-              <div className="h-48 bg-gray-200 flex items-center justify-center">
-                Chart Placeholder
-              </div>
-            </div>
-          </div>
-        </div>
+        {/* Plan Summary Table */}
+        <Table
+          rowSelection={rowSelection}
+          columns={columns}
+          dataSource={limitedDataSource} 
+          pagination={{
+            current: currentPage,
+            pageSize: rowsToDisplay === "all" ? totalPlans : rowsToDisplay,
+            total: totalPlans,
+            onChange: (page) => setCurrentPage(page),
+            showSizeChanger: false, 
+          }} 
+        />
       </div>
     </div>
   );
