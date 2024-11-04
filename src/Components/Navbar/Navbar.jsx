@@ -41,7 +41,7 @@ const Navbar = () => {
           </a>
           <Link
             to={`${import.meta.env.VITE_BACKEND_SSO}?serviceURL=${
-              import.meta.env.VITE_SERVICE_URL
+              import.meta.env.VITE_CURRENT_URL
             }`}
             className="text-gray-800 hover:text-[#3596FF] font-noto text-xl"
           >

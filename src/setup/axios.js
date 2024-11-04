@@ -1,81 +1,51 @@
 import axios from "axios";
+import axiosRetry from "axios-retry";
+import { toast } from "react-toastify";
+let store;
+export const injectStore = (_store) => {
+  store = _store;
+};
+
 const instance = axios.create({
-  baseURL: "http://localhost:8080",
-  //   timeout: 1000,
-  //   headers: { "X-Custom-Header": "foobar" },
+  baseURL: import.meta.env.VITE_BACKEND_API,
+  withCredentials: true,
 });
-instance.defaults.withCredentials = true;
-// instance.defaults.headers.common[
-//   "Authorization"
-// ] = `Bearer ${localStorage.getItem("jwt")}`;
+
+axiosRetry(instance, {
+  retries: 3,
+  retryCondition: (error) => {
+    return error.response.status === 401 || error.response.status === 405;
+  },
+  retryDelay: (retryCount) => {
+    return retryCount * 100;
+  },
+});
+
 // Add a request interceptor
-// instance.interceptors.request.use(
-//   function (config) {
-//     // Do something before request is sent
-//     return config;
-//   },
-//   function (error) {
-//     // Do something with request error
-//     return Promise.reject(error);
-//   }
-// );
+instance.interceptors.request.use(
+  function (config) {
+    const state = store.getState();
+    const token = state.account?.userInfo?.access_token ?? "";
+    if (token) {
+      config.headers["Authorization"] = `Bearer ${token}`;
+    }
+    return config;
+  },
+  function (error) {
+    // Do something with request error
+    return Promise.reject(error);
+  }
+);
 // // Add a response interceptor
 instance.interceptors.response.use(
   function (response) {
-    return response.data; // Return the data directly for 2xx responses
+    return response && response.data ? response.data : response;
   },
   function (err) {
-    // Resolve rather than reject if the status is within 4xx range for validation errors
-    const status = (err && err.response && err.response?.status) || 500;
-    console.log(status);
-    switch (status) {
-      // authentication (token related issues)
-      case 401: {
-        // if (
-        //   window.location.pathname !== "/" &&
-        //   window.location.pathname !== "/login"
-        // ) {
-        //   toast.error("Unauthorized user!");
-        // }
-
-        return err.response.data;
-      }
-
-      // forbidden (permission related issues)
-      case 403: {
-        // toast.error("You don't have permission to access this resource!");
-        return err.response.data;
-      }
-
-      // bad request
-      case 400: {
-        // toast.error("Error! Bad Request");
-        return err.response.data;
-      }
-
-      // not found
-      case 404: {
-        // toast.error("Error! Not found!");
-        return err.response.data;
-      }
-
-      // conflict
-      case 409: {
-        // toast.error("Error with Conflict");
-        return err.response.data;
-      }
-
-      // unprocessable
-      case 422: {
-        // toast.error("Unprocessable!");
-        return err.response.data;
-      }
-
-      // generic api error (server related) unexpected
-      default: {
-        return err.response.data;
-      }
+    if (err && err.response && err.response.data) {
+      return err.response.data;
     }
+    return Promise.reject(err);
   }
 );
 

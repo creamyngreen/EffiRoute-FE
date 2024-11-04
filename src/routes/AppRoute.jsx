@@ -8,25 +8,42 @@ import Admin from "../Pages/Admin/Admin";
 import AccountManagement from "../Pages/AccountManagement/AccountManagement";
 import Supplier from "../Pages/Supplier/Supplier";
 import LoginWithSSO from "../Components/LoginWithSSO/LoginWithSSO";
+import PrivateRoute from "./PrivateRoute";
 const AppRoute = () => {
   return (
-    <>
-      <Routes>
-        <Route path="/" exact element={<Home />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/account" element={<AccountManagement />} />
-        <Route path="/admin" element={<Admin />} />
-        <Route path="/supplier" element={<Supplier />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/verify-code" element={<VerifyCode />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/code" element={<LoginWithSSO />} />
-        {/* <PrivateRoute path="/users" component={Users} />
-                <PrivateRoute path="/permissions" component={Permission} />
-                <PrivateRoute path="/role-permission" component={RolePermission} /> */}
-        <Route path="*">404 Not Found</Route>
-      </Routes>
-    </>
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route
+        path="/account"
+        element={
+          <PrivateRoute>
+            <AccountManagement />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/admin"
+        element={
+          <PrivateRoute>
+            <Admin />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/supplier"
+        element={
+          <PrivateRoute>
+            <Supplier />
+          </PrivateRoute>
+        }
+      />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/verify-code" element={<VerifyCode />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/code" element={<LoginWithSSO />} />
+      <Route path="*" element={<div>404 Not Found</div>} />
+    </Routes>
   );
 };
 
