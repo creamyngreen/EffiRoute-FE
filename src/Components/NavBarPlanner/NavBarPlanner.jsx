@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import Logo from "../../assets/Home/Logo/Logo.png";
-import face2 from "../../assets/Home/WhyChooseUs/face2.png";
 import noti from "../../assets/Planner/noti.png";
 import { FaUser } from "react-icons/fa";
 

@@ -102,7 +102,7 @@ const columns = [
 ];
 
 // Data source for the table
-const initialDataSource = Array.from({ length: 46 }).map((_, i) => ({
+const initialDataSource = Array.from({ length: 50 }).map((_, i) => ({
   key: i,
   id: `ID-${i}`,
   demand: `Demand ${i} tons`,
@@ -148,6 +148,8 @@ const Planner = () => {
   const [activeButton, setActiveButton] = useState(null);
   const [activeTimeFrame, setActiveTimeFrame] = useState(null);
   const [activeStatus, setActiveStatus] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1); // Track the current page
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false); // State for delete confirmation modal
 
   const onSelectChange = (newSelectedRowKeys) => {
     console.log("selectedRowKeys changed: ", newSelectedRowKeys);
@@ -172,7 +174,8 @@ const Planner = () => {
     console.log("Selected date:", date, dateString);
   };
 
-  const limitedDataSource = dataSource.slice(0, rowsToDisplay);
+  // Calculate the limited data source based on current page and rows to display
+  const limitedDataSource = dataSource.slice((currentPage - 1) * rowsToDisplay, currentPage * rowsToDisplay);
 
   const handleRowsChange = (event) => {
     setRowsToDisplay(parseInt(event.target.value, 10));
@@ -236,11 +239,20 @@ const Planner = () => {
     setIsUploadModalVisible(false);
   };
 
-  const handleDeletePlans = async () => {
+  const handleDeletePlans = () => {
+    setIsDeleteModalVisible(true); // Show the delete confirmation modal
+  };
+
+  const confirmDeletePlans = async () => {
     setDataSource((prevData) =>
       prevData.filter((item) => !selectedRowKeys.includes(item.key))
     );
     setSelectedRowKeys([]);
+    setIsDeleteModalVisible(false); // Close the modal after deletion
+  };
+
+  const cancelDeletePlans = () => {
+    setIsDeleteModalVisible(false); // Close the modal without deleting
   };
 
   // Function to handle editing selected plans
@@ -614,11 +626,14 @@ const Planner = () => {
         <Table
           rowSelection={rowSelection}
           columns={columns}
-          dataSource={dataSource} // Use the full data source for pagination
+          dataSource={limitedDataSource} // Use the sliced data source for pagination
           pagination={{
-            pageSize: rowsToDisplay, // Set the number of rows per page based on user selection
+            current: currentPage, // Set the current page
+            pageSize: rowsToDisplay,
+            total: dataSource.length, // Total number of items
             onChange: (page, pageSize) => {
-              setRowsToDisplay(pageSize); // Update rowsToDisplay when page size changes
+              setCurrentPage(page); // Update current page
+              setRowsToDisplay(pageSize); // Update rows to display
             },
           }}
           components={{
@@ -1022,6 +1037,33 @@ const Planner = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {isDeleteModalVisible && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+          <div className="bg-white p-8 rounded shadow-lg relative w-1/4">
+            <h2 className="text-xl text-center font-bold mb-4">
+              Confirm Deletion
+            </h2>
+            <p className="text-center mb-6">
+              Are you sure you want to delete the selected plans?
+            </p>
+            <div className="flex justify-center">
+              <button
+                className="bg-red-500 text-white px-4 py-2 w-28 rounded mr-5"
+                onClick={confirmDeletePlans}
+              >
+                Yes, Delete
+              </button>
+              <button
+                className="bg-gray-300 text-black px-4 py-2 w-28 rounded"
+                onClick={cancelDeletePlans}
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}
