@@ -14,7 +14,8 @@ const AppLayout = ({ children }) => {
     "/account",
     "/supplier",
     "/planner",
-    "/order",
+    "/manageaccount",
+    "/optimization",
     "/manager",
     "/monitor",
 
@@ -24,9 +25,10 @@ const AppLayout = ({ children }) => {
     "/account",
     "/supplier",
     "/planner",
-    "/order",
+    "/optimization",
     "/manager",
     "/monitor",
+    "/manageaccount",
 
   ];
   return (

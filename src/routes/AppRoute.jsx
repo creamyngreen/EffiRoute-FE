@@ -9,9 +9,10 @@ import AccountManagement from "../Pages/Admin/AccountManagement/AccountManagemen
 import Supplier from "../Pages/Admin/Supplier/Supplier";
 import LoginWithSSO from "../Components/LoginWithSSO/LoginWithSSO";
 import Planner from "../Pages/Planner/Planner";
-import Order from "../Pages/Order/Order";
+import Optimization from "../Pages/Optimization/Optimization";
 import Manager from "../Pages/Manager/Manager";
 import Monitor from "../Pages/Manager/Monitor/Monitor";
+import UserManagement from "../Pages/UserManagement/UserManagement";
 const AppRoute = () => {
   return (
     <>
@@ -19,7 +20,8 @@ const AppRoute = () => {
         <Route path="/" exact element={<Home />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/admin" element={<Admin />} />
-        <Route path="/order" element={<Order />} />
+        <Route path="/optimization" element={<Optimization />} />
+        <Route path="/manageaccount" element={<UserManagement />} />
         <Route path="/monitor" element={<Monitor />} />
         <Route path="/planner" element={<Planner />} />
         <Route path="/manager" element={<Manager />} />
