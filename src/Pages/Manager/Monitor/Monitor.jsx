@@ -147,9 +147,9 @@ const Monitor = () => {
             <h1 className="text-2xl font-bold flex-grow text-center">Total Completed Plan by Week</h1>
             <div className="ml-auto">
               <Select
-                defaultValue={selectedMonth}
+                defaultValue={selectedMonthCompleted}
                 style={{ width: 120 }}
-                onChange={(value) => setSelectedMonth(value)}
+                onChange={(value) => setSelectedMonthCompleted(value)}
               >
                 <Option value="January">January</Option>
                 <Option value="February">February</Option>

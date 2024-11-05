@@ -148,8 +148,9 @@ const Planner = () => {
   const [activeButton, setActiveButton] = useState(null);
   const [activeTimeFrame, setActiveTimeFrame] = useState(null);
   const [activeStatus, setActiveStatus] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1); // Track the current page
-  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false); // State for delete confirmation modal
+  const [currentPage, setCurrentPage] = useState(1); 
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false); 
+  const [dateRange, setDateRange] = useState([null, null]); 
 
   const onSelectChange = (newSelectedRowKeys) => {
     console.log("selectedRowKeys changed: ", newSelectedRowKeys);
@@ -175,7 +176,10 @@ const Planner = () => {
   };
 
   // Calculate the limited data source based on current page and rows to display
-  const limitedDataSource = dataSource.slice((currentPage - 1) * rowsToDisplay, currentPage * rowsToDisplay);
+  const limitedDataSource = dataSource.slice(
+    (currentPage - 1) * rowsToDisplay,
+    currentPage * rowsToDisplay
+  );
 
   const handleRowsChange = (event) => {
     setRowsToDisplay(parseInt(event.target.value, 10));
@@ -201,8 +205,8 @@ const Planner = () => {
 
   const handleDestinationChange = (event) => {
     const value = event.target.value;
-    setDestination(value); // Update destination state
-    fetchPredictions(value); // Fetch predictions based on input
+    setDestination(value); 
+    fetchPredictions(value); 
   };
 
   const resetFormFields = () => {
@@ -240,7 +244,16 @@ const Planner = () => {
   };
 
   const handleDeletePlans = () => {
-    setIsDeleteModalVisible(true); // Show the delete confirmation modal
+    if (selectedRowKeys.length === 0) {
+      // Show notification if no plans are selected
+      notification.warning({
+        message: "No Plans Selected",
+        description: "Please select at least one plan to withdraw.",
+        placement: "topRight",
+      });
+      return; 
+    }
+    setIsDeleteModalVisible(true); 
   };
 
   const confirmDeletePlans = async () => {
@@ -248,11 +261,11 @@ const Planner = () => {
       prevData.filter((item) => !selectedRowKeys.includes(item.key))
     );
     setSelectedRowKeys([]);
-    setIsDeleteModalVisible(false); // Close the modal after deletion
+    setIsDeleteModalVisible(false); 
   };
 
   const cancelDeletePlans = () => {
-    setIsDeleteModalVisible(false); // Close the modal without deleting
+    setIsDeleteModalVisible(false); 
   };
 
   // Function to handle editing selected plans
@@ -270,20 +283,47 @@ const Planner = () => {
     const selectedPlans = dataSource.filter((item) =>
       selectedRowKeys.includes(item.key)
     );
-    setEditData(selectedPlans); // Set the data to be edited
-    setSingleEditPlan(selectedPlans[0]); // Set the first selected plan for editing
+    setEditData(selectedPlans); 
+    setSingleEditPlan(selectedPlans[0]); 
     setIsEditModalVisible(true);
   };
 
   const handleShowAddOneModal = () => {
     setIsModalVisible(false);
     setIsSecondModalVisible(true);
-    setIsFormSubmitted(false); // Reset form submitted state
+    setIsFormSubmitted(false); 
   };
 
   const handleButtonClick = (buttonName) => {
-    setActiveButton(buttonName); // Set the active button
+    setActiveButton(buttonName); 
   };
+
+  const handleTimeFrameChange = (timeFrame) => {
+    const today = moment(); 
+    let startDate;
+
+    
+    const currentEndDate = dateRange[1] ? moment(dateRange[1]) : today; 
+
+    switch (timeFrame) {
+      case "today":
+        startDate = today.startOf("day");
+        break;
+      case "1week":
+        startDate = moment(currentEndDate).subtract(1, "week").startOf("day"); 
+        break;
+      case "1month":
+        startDate = moment(currentEndDate).subtract(1, "month").startOf("day"); 
+        break;
+      case "3months":
+        startDate = moment(currentEndDate).subtract(3, "months").startOf("day"); 
+        break;
+      default:
+        return;
+    }
+    setDateRange([startDate, dateRange[1]]); 
+    setActiveTimeFrame(timeFrame); 
+  };  
 
   return (
     <div className="min-h-screen">
@@ -308,7 +348,7 @@ const Planner = () => {
               className="bg-primary text-white text-sm font-bold px-4 py-2 rounded-md hover:bg-orange-600 flex items-center"
               onClick={showModal}
             >
-              <FaPlus className="mr-2 text-xs" /> Add order
+              <FaPlus className="mr-2 text-xs" /> Add Plan
             </button>
           </div>
         </div>
@@ -405,8 +445,8 @@ const Planner = () => {
               <TiFilter className="mr-2" />
               Detailed Filter
             </button>
-            <button className="text-primary border border-primary w-20 justify-center rounded-md px-2 py-2 flex items-center text-sm font-bold">
-              View
+            <button className="text-primary border border-primary w-30 justify-center rounded-md px-2 py-2 flex items-center text-sm font-bold">
+              Apply Filter
             </button>
           </div>
         </div>
@@ -439,36 +479,44 @@ const Planner = () => {
                 <button
                   type="button"
                   className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-s-lg ${
-                    activeTimeFrame === "today" ? "bg-orange-100 text-primary border-primary" : ""
+                    activeTimeFrame === "today"
+                      ? "bg-orange-100 text-primary border-primary"
+                      : ""
                   }`}
-                  onClick={() => setActiveTimeFrame("today")}
+                  onClick={() => handleTimeFrameChange("today")}
                 >
                   Today
                 </button>
                 <button
                   type="button"
                   className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 ${
-                    activeTimeFrame === "1week" ? "bg-orange-100 text-primary border-primary" : ""
+                    activeTimeFrame === "1week"
+                      ? "bg-orange-100 text-primary border-primary"
+                      : ""
                   }`}
-                  onClick={() => setActiveTimeFrame("1week")}
+                  onClick={() => handleTimeFrameChange("1week")}
                 >
                   1 Week
                 </button>
                 <button
                   type="button"
                   className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 ${
-                    activeTimeFrame === "1month" ? "bg-orange-100 text-primary border-primary" : ""
+                    activeTimeFrame === "1month"
+                      ? "bg-orange-100 text-primary border-primary"
+                      : ""
                   }`}
-                  onClick={() => setActiveTimeFrame("1month")}
+                  onClick={() => handleTimeFrameChange("1month")}
                 >
                   1 Month
                 </button>
                 <button
                   type="button"
                   className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-e-lg ${
-                    activeTimeFrame === "3months" ? "bg-orange-100 text-primary border-primary" : ""
+                    activeTimeFrame === "3months"
+                      ? "bg-orange-100 text-primary border-primary"
+                      : ""
                   }`}
-                  onClick={() => setActiveTimeFrame("3months")}
+                  onClick={() => handleTimeFrameChange("3months")}
                 >
                   3 Months
                 </button>
@@ -476,7 +524,11 @@ const Planner = () => {
 
               {/* Calendar */}
               <Space direction="vertical" size={12}>
-                <RangePicker className="h-9 hover:bg-gray-200 focus:ring-primary" />
+                <RangePicker
+                  className="h-9 hover:bg-gray-200 focus:ring-primary"
+                  value={dateRange} // Set the value of RangePicker
+                  onChange={(dates) => setDateRange(dates)} // Update dateRange when user selects dates
+                />
               </Space>
             </div>
 
@@ -499,7 +551,9 @@ const Planner = () => {
                 <button
                   type="button"
                   className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-s-lg ${
-                    activeStatus === "draft" ? "bg-orange-100 text-primary border-primary" : ""
+                    activeStatus === "draft"
+                      ? "bg-orange-100 text-primary border-primary"
+                      : ""
                   }`}
                   onClick={() => setActiveStatus("draft")}
                 >
@@ -508,7 +562,9 @@ const Planner = () => {
                 <button
                   type="button"
                   className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 ${
-                    activeStatus === "pending" ? "bg-orange-100 text-primary border-primary" : ""
+                    activeStatus === "pending"
+                      ? "bg-orange-100 text-primary border-primary"
+                      : ""
                   }`}
                   onClick={() => setActiveStatus("pending")}
                 >
@@ -517,7 +573,9 @@ const Planner = () => {
                 <button
                   type="button"
                   className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 ${
-                    activeStatus === "approved" ? "bg-orange-100 text-primary border-primary" : ""
+                    activeStatus === "approved"
+                      ? "bg-orange-100 text-primary border-primary"
+                      : ""
                   }`}
                   onClick={() => setActiveStatus("approved")}
                 >
@@ -526,7 +584,9 @@ const Planner = () => {
                 <button
                   type="button"
                   className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 ${
-                    activeStatus === "rejected" ? "bg-orange-100 text-primary border-primary" : ""
+                    activeStatus === "rejected"
+                      ? "bg-orange-100 text-primary border-primary"
+                      : ""
                   }`}
                   onClick={() => setActiveStatus("rejected")}
                 >
@@ -535,7 +595,9 @@ const Planner = () => {
                 <button
                   type="button"
                   className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-e-lg ${
-                    activeStatus === "completed" ? "bg-orange-100 text-primary border-primary" : ""
+                    activeStatus === "completed"
+                      ? "bg-orange-100 text-primary border-primary"
+                      : ""
                   }`}
                   onClick={() => setActiveStatus("completed")}
                 >
@@ -562,7 +624,9 @@ const Planner = () => {
                 <button
                   type="button"
                   className={`flex-1 px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-s-lg ${
-                    priorityInput === "Low" ? "bg-orange-100 text-primary border-primary" : ""
+                    priorityInput === "Low"
+                      ? "bg-orange-100 text-primary border-primary"
+                      : ""
                   }`}
                   onClick={() => setPriorityInput("Low")}
                 >
@@ -571,7 +635,9 @@ const Planner = () => {
                 <button
                   type="button"
                   className={`flex-1 px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-e-lg  ${
-                    priorityInput === "High" ? "bg-orange-100 text-primary border-primary" : ""
+                    priorityInput === "High"
+                      ? "bg-orange-100 text-primary border-primary"
+                      : ""
                   }`}
                   onClick={() => setPriorityInput("High")}
                 >
@@ -626,14 +692,14 @@ const Planner = () => {
         <Table
           rowSelection={rowSelection}
           columns={columns}
-          dataSource={limitedDataSource} 
+          dataSource={limitedDataSource}
           pagination={{
-            current: currentPage, 
+            current: currentPage,
             pageSize: rowsToDisplay,
-            total: dataSource.length, 
+            total: dataSource.length,
             onChange: (page, pageSize) => {
-              setCurrentPage(page); 
-              setRowsToDisplay(pageSize); 
+              setCurrentPage(page);
+              setRowsToDisplay(pageSize);
             },
           }}
           components={{
@@ -721,7 +787,9 @@ const Planner = () => {
                   }`} // Highlight if empty on submit
                   placeholder="Select your deadline"
                   required
-                  disabledDate={(current) => current && current < moment().startOf('day')} // Disable past dates
+                  disabledDate={(current) =>
+                    current && current < moment().startOf("day")
+                  } // Disable past dates
                 />
                 <label>Demand</label>
                 <input
@@ -743,7 +811,9 @@ const Planner = () => {
                   <button
                     type="button"
                     className={`flex-1 px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-s-lg ${
-                      modalPriorityInput === "Low" ? "bg-orange-100 text-primary border-primary" : ""
+                      modalPriorityInput === "Low"
+                        ? "bg-orange-100 text-primary border-primary"
+                        : ""
                     }`}
                     onClick={() => setModalPriorityInput("Low")}
                   >
@@ -752,7 +822,9 @@ const Planner = () => {
                   <button
                     type="button"
                     className={`flex-1 px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-e-lg ${
-                      modalPriorityInput === "High" ? "bg-orange-100 text-primary border-primary" : ""
+                      modalPriorityInput === "High"
+                        ? "bg-orange-100 text-primary border-primary"
+                        : ""
                     }`}
                     onClick={() => setModalPriorityInput("High")}
                   >
@@ -893,19 +965,17 @@ const Planner = () => {
               {singleEditPlan && (
                 <div className="mb-4">
                   <label>Plan Creation Date</label>
-                  <DatePicker
-                    defaultValue={
+                  <input
+                    type="text"
+                    value={
                       singleEditPlan.createdDate
-                        ? moment(singleEditPlan.createdDate)
-                        : null
+                        ? moment(singleEditPlan.createdDate).format(
+                            "YYYY-MM-DD"
+                          )
+                        : ""
                     }
                     className="border mt-2 border-gray-300 rounded p-2 w-full mb-2"
-                    onChange={(date, dateString) => {
-                      setSingleEditPlan({
-                        ...singleEditPlan,
-                        createdDate: dateString,
-                      });
-                    }}
+                    readOnly
                   />
                   <label>Deadline</label>
                   <DatePicker
@@ -921,7 +991,9 @@ const Planner = () => {
                         deadline: dateString,
                       });
                     }}
-                    disabledDate={(current) => current && current < moment().startOf('day')} // Disable past dates
+                    disabledDate={(current) =>
+                      current && current < moment().startOf("day")
+                    } // Disable past dates
                   />
                   <label>Demand</label>
                   <input
@@ -945,18 +1017,32 @@ const Planner = () => {
                     <button
                       type="button"
                       className={`flex-1 px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-s-lg ${
-                        singleEditPlan.priority === "Low" ? "bg-orange-100 text-primary border-primary" : ""
+                        singleEditPlan.priority === "Low"
+                          ? "bg-orange-100 text-primary border-primary"
+                          : ""
                       }`}
-                      onClick={() => setSingleEditPlan({ ...singleEditPlan, priority: "Low" })}
+                      onClick={() =>
+                        setSingleEditPlan({
+                          ...singleEditPlan,
+                          priority: "Low",
+                        })
+                      }
                     >
                       Low
                     </button>
                     <button
                       type="button"
                       className={`flex-1 px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-e-lg ${
-                        singleEditPlan.priority === "High" ? "bg-orange-100 text-primary border-primary" : ""
+                        singleEditPlan.priority === "High"
+                          ? "bg-orange-100 text-primary border-primary"
+                          : ""
                       }`}
-                      onClick={() => setSingleEditPlan({ ...singleEditPlan, priority: "High" })}
+                      onClick={() =>
+                        setSingleEditPlan({
+                          ...singleEditPlan,
+                          priority: "High",
+                        })
+                      }
                     >
                       High
                     </button>
