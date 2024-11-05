@@ -12,7 +12,8 @@ import { Select } from "antd";
 const { Option } = Select;
 
 const Monitor = () => {
-  const [selectedMonth, setSelectedMonth] = useState("January");
+  const [selectedMonthCompleted, setSelectedMonthCompleted] = useState("January");
+  const [selectedMonthDemand, setSelectedMonthDemand] = useState("January");
 
   const completedPlanData = {
     January: [
@@ -27,7 +28,7 @@ const Monitor = () => {
       { month: "Week 3", value: 5500 },
       { month: "Week 4", value: 7000 },
     ],
-    // Add data for other months similarly
+    
   };
 
   const demandData = {
@@ -43,21 +44,21 @@ const Monitor = () => {
       { month: "Week 3", value: 4000 },
       { month: "Week 4", value: 4500 },
     ],
-    // Add data for other months similarly
+   
   };
 
   const completedPlanConfig = {
-    data: completedPlanData[selectedMonth],
+    data: completedPlanData[selectedMonthCompleted],
     xField: "month",
     yField: "value",
 
   };
 
   const demandConfig = {
-    data: demandData[selectedMonth],
+    data: demandData[selectedMonthDemand],
     xField: "month",
     yField: "value",
- 
+
   };
 
   return (
@@ -142,6 +143,7 @@ const Monitor = () => {
         <h2 className="text-2xl font-bold mb-2">Plans Details</h2>
         <div className="p-5">
           <div className="flex justify-between items-center mb-4">
+
             <h1 className="text-2xl font-bold flex-grow text-center">Total Completed Plan by Week</h1>
             <div className="ml-auto">
               <Select
@@ -168,28 +170,26 @@ const Monitor = () => {
             <Line {...completedPlanConfig} />
           </div>
 
-          <div className="flex justify-center items-center mt-20 mb-4 text-center">
-            <h1 className="text-2xl font-bold flex-grow text-center">Number of Demand by Week</h1>
-            <div className="ml-auto">
-              <Select
-                defaultValue={selectedMonth}
-                style={{ width: 120 }}
-                onChange={(value) => setSelectedMonth(value)}
-              >
-                <Option value="January">January</Option>
-                <Option value="February">February</Option>
-                <Option value="March">March</Option>
-                <Option value="April">April</Option>
-                <Option value="May">May</Option>
-                <Option value="June">June</Option>
-                <Option value="July">July</Option>
-                <Option value="August">August</Option>
-                <Option value="September">September</Option>
-                <Option value="October">October</Option>
-                <Option value="November">November</Option>
-                <Option value="December">December</Option>
-              </Select>
-            </div>
+          <div className="flex justify-between items-center mt-8 mb-4">
+            <h1 className="text-2xl font-bold">Number of Demand by Week</h1>
+            <Select
+              defaultValue={selectedMonthDemand}
+              style={{ width: 120 }}
+              onChange={(value) => setSelectedMonthDemand(value)}
+            >
+              <Option value="January">January</Option>
+              <Option value="February">February</Option>
+              <Option value="March">March</Option>
+              <Option value="April">April</Option>
+              <Option value="May">May</Option>
+              <Option value="June">June</Option>
+              <Option value="July">July</Option>
+              <Option value="August">August</Option>
+              <Option value="September">September</Option>
+              <Option value="October">October</Option>
+              <Option value="November">November</Option>
+              <Option value="December">December</Option>
+            </Select>
           </div>
           <div className="sales-chart">
             <Line {...demandConfig} />
