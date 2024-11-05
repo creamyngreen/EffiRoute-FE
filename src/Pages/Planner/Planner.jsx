@@ -626,14 +626,14 @@ const Planner = () => {
         <Table
           rowSelection={rowSelection}
           columns={columns}
-          dataSource={limitedDataSource} // Use the sliced data source for pagination
+          dataSource={limitedDataSource} 
           pagination={{
-            current: currentPage, // Set the current page
+            current: currentPage, 
             pageSize: rowsToDisplay,
-            total: dataSource.length, // Total number of items
+            total: dataSource.length, 
             onChange: (page, pageSize) => {
-              setCurrentPage(page); // Update current page
-              setRowsToDisplay(pageSize); // Update rows to display
+              setCurrentPage(page); 
+              setRowsToDisplay(pageSize); 
             },
           }}
           components={{
@@ -721,6 +721,7 @@ const Planner = () => {
                   }`} // Highlight if empty on submit
                   placeholder="Select your deadline"
                   required
+                  disabledDate={(current) => current && current < moment().startOf('day')} // Disable past dates
                 />
                 <label>Demand</label>
                 <input
@@ -920,6 +921,7 @@ const Planner = () => {
                         deadline: dateString,
                       });
                     }}
+                    disabledDate={(current) => current && current < moment().startOf('day')} // Disable past dates
                   />
                   <label>Demand</label>
                   <input

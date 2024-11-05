@@ -74,7 +74,7 @@ function NavBarPlanner() {
               <ul className="py-2" aria-labelledby="user-menu-button">
                 <li>
                   <a
-                    href="#"
+                    href="/manageaccount"
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
                     Basic Information Management
@@ -118,7 +118,7 @@ function NavBarPlanner() {
             </li>
             <li>
               <a
-                href="/order"
+                href="/optimization"
                 className="block py-2 px-3  text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-orange-500 md:p-0 "
               >
                 Optimization
