@@ -13,30 +13,87 @@ import Optimization from "../Pages/Optimization/Optimization";
 import Manager from "../Pages/Manager/Manager";
 import Monitor from "../Pages/Manager/Monitor/Monitor";
 import UserManagement from "../Pages/UserManagement/UserManagement";
+import PrivateRoute from "./PrivateRoute";
+import NotFound from "../Pages/404NotFound/404NotFound";
+
 const AppRoute = () => {
   return (
-    <>
-      <Routes>
-        <Route path="/" exact element={<Home />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/admin" element={<Admin />} />
-        <Route path="/optimization" element={<Optimization />} />
-        <Route path="/manageaccount" element={<UserManagement />} />
-        <Route path="/monitor" element={<Monitor />} />
-        <Route path="/planner" element={<Planner />} />
-        <Route path="/manager" element={<Manager />} />
-        <Route path="/account" element={<AccountManagement />} />
-        <Route path="/supplier" element={<Supplier />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/verify-code" element={<VerifyCode />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/code" element={<LoginWithSSO />} />
-        {/* <PrivateRoute path="/users" component={Users} />
-                <PrivateRoute path="/permissions" component={Permission} />
-                <PrivateRoute path="/role-permission" component={RolePermission} /> */}
-        <Route path="*">404 Not Found</Route>
-      </Routes>
-    </>
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/verify-code" element={<VerifyCode />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/code" element={<LoginWithSSO />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+
+      <Route
+        path="/admin"
+        element={
+          <PrivateRoute allowedRoles={["admin"]}>
+            <Admin />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/optimization"
+        element={
+          <PrivateRoute allowedRoles={["planner", "admin"]}>
+            <Optimization />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/monitor"
+        element={
+          <PrivateRoute allowedRoles={["manager", "admin"]}>
+            <Monitor />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/planner"
+        element={
+          <PrivateRoute allowedRoles={["planner", "admin"]}>
+            <Planner />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/manager"
+        element={
+          <PrivateRoute allowedRoles={["manager", "admin"]}>
+            <Manager />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/account"
+        element={
+          <PrivateRoute allowedRoles={["admin"]}>
+            <AccountManagement />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/supplier"
+        element={
+          <PrivateRoute allowedRoles={["admin"]}>
+            <Supplier />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/manageaccount"
+        element={
+          <PrivateRoute allowedRoles={["planner", "manager"]}>
+            <UserManagement />
+          </PrivateRoute>
+        }
+      />
+
+      <Route path="/404" element={<NotFound />} />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
   );
 };
 

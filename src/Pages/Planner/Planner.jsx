@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useRef } from "react";
+/* eslint-disable react/prop-types */
+import { useState, useEffect, useMemo } from "react";
 import NavBarPlanner from "../../Components/NavBarPlanner/NavBarPlanner";
 import { FaPlus } from "react-icons/fa6";
 import { FaArrowDown } from "react-icons/fa";
 import { CiSearch } from "react-icons/ci";
 import { TiFilter } from "react-icons/ti";
 import { IoMdArrowDropdown } from "react-icons/io";
-import { DatePicker, Space, Table, notification } from "antd";
+import { DatePicker, Space, Table, notification, Empty } from "antd";
 import { RiExpandUpDownFill } from "react-icons/ri";
 import { RiDeleteBack2Line } from "react-icons/ri";
 import { FaFileExcel } from "react-icons/fa";
@@ -14,6 +15,17 @@ import { IoMdClose } from "react-icons/io";
 import { FaFileUpload } from "react-icons/fa";
 import { API_KEY } from "../../config";
 import moment from "moment";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  doAddPlan,
+  fetchPlans,
+  searchPlans,
+  deletePlans,
+  updatePlans,
+} from "../../redux/action/plannerAction";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
+
 const getStatusTag = (status) => {
   switch (status) {
     case "Completed":
@@ -22,25 +34,25 @@ const getStatusTag = (status) => {
           Completed
         </span>
       );
-    case "Approved":
+    case "approved":
       return (
         <span className="bg-blue-200 text-blue-800 px-2 py-1 rounded">
           Approved
         </span>
       );
-    case "Draft":
+    case "draft":
       return (
         <span className="bg-gray-200 text-gray-800 px-2 py-1 rounded">
           Draft
         </span>
       );
-    case "Rejected":
+    case "rejected":
       return (
         <span className="bg-red-200 text-red-800 px-2 py-1 rounded">
           Rejected
         </span>
       );
-    case "Pending":
+    case "pending":
       return (
         <span className="bg-yellow-200 text-yellow-800 px-2 py-1 rounded">
           Pending
@@ -76,70 +88,83 @@ const columns = [
   {
     title: "Created Date",
     dataIndex: "createdDate",
+    sorter: (a, b) =>
+      moment(a.createdDate).unix() - moment(b.createdDate).unix(),
   },
   {
     title: "Deadline",
     dataIndex: "deadline",
+    sorter: (a, b) => moment(a.deadline).unix() - moment(b.deadline).unix(),
   },
   {
     title: "Demand",
     dataIndex: "demand",
+    render: (text) => `${text} tons`,
+    sorter: (a, b) => a.demand - b.demand,
   },
   {
     title: "Destination",
     dataIndex: "destination",
+    sorter: (a, b) => a.destination.localeCompare(b.destination),
   },
   {
     title: "Priority",
     dataIndex: "priority",
     render: (text) => getPriorityTag(text),
+    sorter: (a, b) => a.priority.localeCompare(b.priority),
   },
   {
     title: "Status",
     dataIndex: "status",
     render: (text) => getStatusTag(text),
+    sorter: (a, b) => a.status.localeCompare(b.status),
   },
 ];
 
-// Data source for the table
-const initialDataSource = Array.from({ length: 50 }).map((_, i) => ({
-  key: i,
-  id: `ID-${i}`,
-  demand: `Demand ${i} tons`,
-  destination: `Destination ${i}`,
-  status:
-    i % 5 === 0
-      ? "Draft"
-      : i % 4 === 0
-      ? "Completed"
-      : i % 4 === 1
-      ? "Approved"
-      : i % 4 === 2
-      ? "Rejected"
-      : "Pending",
-  priority: i % 2 === 0 ? "High" : "Low",
-  deadline: `2023-12-${(i % 30) + 1}`,
-  createdDate: `2023-11-${(i % 30) + 1}`,
-}));
+const CustomEmpty = ({ onReset }) => (
+  <div className="flex flex-col items-center justify-center py-8">
+    <Empty
+      image={Empty.PRESENTED_IMAGE_SIMPLE}
+      description={
+        <div className="text-center">
+          <p className="text-gray-500 text-base mb-2">
+            No matching plans found
+          </p>
+          <p className="text-gray-400 text-sm">
+            Try adjusting your filter criteria or search terms
+          </p>
+        </div>
+      }
+    />
+    <button
+      onClick={() => {
+        // Reset all filters
+        onReset();
+      }}
+      className="mt-4 text-primary hover:text-primary/80 text-sm font-medium"
+    >
+      Reset Filters
+    </button>
+  </div>
+);
 
 const Planner = () => {
   const { RangePicker } = DatePicker;
-  const [dataSource, setDataSource] = useState(initialDataSource);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-  const [rowsToDisplay, setRowsToDisplay] = useState(dataSource.length);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isSecondModalVisible, setIsSecondModalVisible] = useState(false);
   const [isDetailedFilterVisible, setIsDetailedFilterVisible] = useState(true);
   const [destination, setDestination] = useState("");
   const [predictions, setPredictions] = useState([]);
-  const [district, setDistrict] = useState("");
-  const [street, setStreet] = useState("");
-  const [city, setCity] = useState("");
-  const [ward, setWard] = useState("");
   const [isUploadModalVisible, setIsUploadModalVisible] = useState(false);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [editData, setEditData] = useState([]);
-  const [singleEditPlan, setSingleEditPlan] = useState(null);
+  const [singleEditPlan, setSingleEditPlan] = useState({
+    demand: "",
+    destination: "",
+    deadline: "",
+    priority: "Low",
+  });
   const [demandInput, setDemandInput] = useState("");
   const [priorityInput, setPriorityInput] = useState(null);
   const [modalPriorityInput, setModalPriorityInput] = useState(null);
@@ -148,9 +173,41 @@ const Planner = () => {
   const [activeButton, setActiveButton] = useState(null);
   const [activeTimeFrame, setActiveTimeFrame] = useState(null);
   const [activeStatus, setActiveStatus] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1); 
-  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false); 
-  const [dateRange, setDateRange] = useState([null, null]); 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+  const [dateRange, setDateRange] = useState([null, null]);
+  const [dateType, setDateType] = useState("createdDate");
+  const [pageSize, setPageSize] = useState(10);
+  const [searchQuery, setSearchQuery] = useState("");
+  const dispatch = useDispatch();
+  const { plans, isLoading } = useSelector((state) => state.planner);
+  const user = useSelector((state) => state.account.userInfo);
+
+  // Transform data for table display
+  const tableData = useMemo(() => {
+    if (!plans?.data || plans?.data.length === 0) {
+      return [];
+    }
+
+    return plans.data.map((plan) => ({
+      key: plan.id,
+      id: plan.id,
+      createdDate: moment(plan.createdAt).format("YYYY-MM-DD"),
+      deadline: moment(plan.deadline).format("YYYY-MM-DD"),
+      demand: plan.demand,
+      destination: plan.destination,
+      priority:
+        plan.priority === 1 || plan.priority === "1" || plan.priority === "High"
+          ? "High"
+          : "Low",
+      status: plan.status,
+    }));
+  }, [plans.data]);
+
+  // Add useEffect to fetch plans when component mounts
+  useEffect(() => {
+    dispatch(fetchPlans(currentPage, pageSize));
+  }, [dispatch, currentPage, pageSize]);
 
   const onSelectChange = (newSelectedRowKeys) => {
     console.log("selectedRowKeys changed: ", newSelectedRowKeys);
@@ -160,6 +217,11 @@ const Planner = () => {
   const rowSelection = {
     selectedRowKeys,
     onChange: onSelectChange,
+    selections: [
+      Table.SELECTION_ALL,
+      Table.SELECTION_INVERT,
+      Table.SELECTION_NONE,
+    ],
   };
 
   const showModal = () => {
@@ -171,18 +233,11 @@ const Planner = () => {
     setIsModalVisible(false);
   };
 
-  const handleDateChange = (date, dateString) => {
-    console.log("Selected date:", date, dateString);
-  };
-
-  // Calculate the limited data source based on current page and rows to display
-  const limitedDataSource = dataSource.slice(
-    (currentPage - 1) * rowsToDisplay,
-    currentPage * rowsToDisplay
-  );
-
   const handleRowsChange = (event) => {
-    setRowsToDisplay(parseInt(event.target.value, 10));
+    const newPageSize = parseInt(event.target.value, 10);
+    setPageSize(newPageSize);
+    setCurrentPage(1); // Reset to first page when changing page size
+    dispatch(fetchPlans(1, newPageSize));
   };
 
   const toggleDetailedFilter = () => {
@@ -203,12 +258,6 @@ const Planner = () => {
     setPredictions(data.predictions || []);
   };
 
-  const handleDestinationChange = (event) => {
-    const value = event.target.value;
-    setDestination(value); 
-    fetchPredictions(value); 
-  };
-
   const resetFormFields = () => {
     setDemandInput("");
     setDestination("");
@@ -216,22 +265,52 @@ const Planner = () => {
     setPriorityInput("Low");
   };
 
-  const handleAddOneDirectly = () => {
-    const newPlan = {
-      key: dataSource.length,
-      id: `ID-${dataSource.length}`,
-      demand: demandInput,
-      destination: destination,
-      status: "Draft",
-      priority: modalPriorityInput,
-      deadline: deadlineInput,
-      createdDate: new Date().toISOString().split("T")[0],
-    };
+  const handleAddOneDirectly = async (e) => {
+    e.preventDefault();
+    setIsFormSubmitted(true);
 
-    setDataSource((prevData) => [...prevData, newPlan]);
-    setIsModalVisible(false);
-    setIsSecondModalVisible(false);
-    resetFormFields();
+    if (!demandInput || !destination || !deadlineInput || !modalPriorityInput) {
+      notification.warning({
+        message: "Missing Fields",
+        description: "Please fill in all required fields.",
+        placement: "topRight",
+      });
+      return;
+    }
+
+    try {
+      const planData = {
+        plannerId: user.user_id,
+        managerId: "3",
+        deadline: deadlineInput,
+        destination: destination,
+        priority: modalPriorityInput === "High" ? 1 : 0,
+        demand: demandInput,
+      };
+
+      // Call API through Redux action
+      await dispatch(doAddPlan(planData));
+
+      // Refresh the plans list
+      await dispatch(fetchPlans(currentPage, pageSize));
+
+      notification.success({
+        message: "Success",
+        description: "Plan added successfully",
+        placement: "topRight",
+      });
+
+      // Close modals and reset form
+      setIsModalVisible(false);
+      setIsSecondModalVisible(false);
+      resetFormFields();
+    } catch (error) {
+      notification.error({
+        message: "Error",
+        description: error.message || "Failed to add plan",
+        placement: "topRight",
+      });
+    }
   };
 
   const showUploadModal = () => {
@@ -251,79 +330,324 @@ const Planner = () => {
         description: "Please select at least one plan to withdraw.",
         placement: "topRight",
       });
-      return; 
+      return;
     }
-    setIsDeleteModalVisible(true); 
+    setIsDeleteModalVisible(true);
   };
 
   const confirmDeletePlans = async () => {
-    setDataSource((prevData) =>
-      prevData.filter((item) => !selectedRowKeys.includes(item.key))
-    );
-    setSelectedRowKeys([]);
-    setIsDeleteModalVisible(false); 
+    try {
+      // Call the delete action with selected IDs
+      await dispatch(deletePlans(selectedRowKeys));
+
+      // Show success notification
+      notification.success({
+        message: "Success",
+        description: "Selected plans have been deleted successfully",
+        placement: "topRight",
+      });
+
+      // Clear selection and close modal
+      setSelectedRowKeys([]);
+      setIsDeleteModalVisible(false);
+
+      // Refresh the plans list
+      dispatch(fetchPlans(currentPage, pageSize));
+    } catch (error) {
+      notification.error({
+        message: "Error",
+        description: error.message || "Failed to delete plans",
+        placement: "topRight",
+      });
+    }
   };
 
   const cancelDeletePlans = () => {
-    setIsDeleteModalVisible(false); 
+    setIsDeleteModalVisible(false);
   };
 
   // Function to handle editing selected plans
   const handleEditPlans = () => {
     if (selectedRowKeys.length === 0) {
-      // Show notification if no plans are selected
       notification.warning({
-        message: "Please choose your plan",
-        description: "You need to select at least one plan to edit.",
+        message: "No Plans Selected",
+        description: "Please select at least one plan to edit.",
         placement: "topRight",
       });
       return;
     }
 
-    const selectedPlans = dataSource.filter((item) =>
-      selectedRowKeys.includes(item.key)
+    // Get the selected plans data
+    const selectedPlans = plans.data.filter((plan) =>
+      selectedRowKeys.includes(plan.id)
     );
-    setEditData(selectedPlans); 
-    setSingleEditPlan(selectedPlans[0]); 
+
+    // Set the edit data for displaying IDs
+    setEditData(selectedPlans);
+
+    // Initialize form with first selected plan's data
+    const firstPlan = selectedPlans[0];
+    setSingleEditPlan({
+      demand: firstPlan.demand,
+      destination: firstPlan.destination,
+      deadline: firstPlan.deadline,
+      priority: firstPlan.priority,
+      createdDate: firstPlan.createdDate,
+    });
+
     setIsEditModalVisible(true);
   };
 
   const handleShowAddOneModal = () => {
     setIsModalVisible(false);
     setIsSecondModalVisible(true);
-    setIsFormSubmitted(false); 
+    setIsFormSubmitted(false);
   };
 
   const handleButtonClick = (buttonName) => {
-    setActiveButton(buttonName); 
+    setActiveButton(buttonName);
   };
 
-  const handleTimeFrameChange = (timeFrame) => {
-    const today = moment(); 
-    let startDate;
+  // Handle date type change
+  const handleDateTypeChange = (type) => {
+    setDateType(type);
+    // Reset active timeframe and date range when switching date types
+    setActiveTimeFrame(null);
+    setDateRange([null, null]);
+  };
 
-    
-    const currentEndDate = dateRange[1] ? moment(dateRange[1]) : today; 
+  // Handle timeframe selection
+  const handleTimeFrameChange = (timeFrame) => {
+    setActiveTimeFrame(timeFrame);
+
+    const today = moment();
+    let startDate;
+    const currentEndDate = dateRange[1] ? moment(dateRange[1]) : today;
 
     switch (timeFrame) {
       case "today":
         startDate = today.startOf("day");
         break;
       case "1week":
-        startDate = moment(currentEndDate).subtract(1, "week").startOf("day"); 
+        startDate = moment(currentEndDate).subtract(1, "week").startOf("day");
         break;
       case "1month":
-        startDate = moment(currentEndDate).subtract(1, "month").startOf("day"); 
+        startDate = moment(currentEndDate).subtract(1, "month").startOf("day");
         break;
       case "3months":
-        startDate = moment(currentEndDate).subtract(3, "months").startOf("day"); 
+        startDate = moment(currentEndDate).subtract(3, "months").startOf("day");
         break;
       default:
         return;
     }
-    setDateRange([startDate, dateRange[1]]); 
-    setActiveTimeFrame(timeFrame); 
-  };  
+
+    setDateRange([startDate, dateRange[1]]);
+  };
+
+  // Handle apply filter
+  const handleApplyFilter = async () => {
+    try {
+      const filters = {
+        status: activeStatus || null,
+        priority:
+          priorityInput === "High" ? 1 : priorityInput === "Low" ? 0 : null,
+        initialFrom:
+          dateType === "createdDate"
+            ? dateRange[0]?.format("YYYY-MM-DD")
+            : null,
+        initialTo:
+          dateType === "createdDate"
+            ? dateRange[1]?.format("YYYY-MM-DD")
+            : null,
+        deadlineFrom:
+          dateType === "deadline" ? dateRange[0]?.format("YYYY-MM-DD") : null,
+        deadlineTo:
+          dateType === "deadline" ? dateRange[1]?.format("YYYY-MM-DD") : null,
+      };
+
+      await dispatch(fetchPlans(currentPage, pageSize, filters));
+    } catch (error) {
+      notification.error({
+        message: "Error",
+        description: error.message || "Failed to apply filters",
+        placement: "topRight",
+      });
+    }
+  };
+
+  // Add a reset filters function
+  const handleResetFilters = () => {
+    setActiveStatus(null);
+    setPriorityInput(null);
+    setDateRange([null, null]);
+    setActiveTimeFrame(null);
+    setDateType("createdDate");
+    dispatch(fetchPlans(1, pageSize));
+  };
+
+  const handleSearch = (e) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+
+    // If search is empty, reset to normal fetch
+    if (!value.trim()) {
+      dispatch(fetchPlans(currentPage, pageSize));
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      dispatch(searchPlans(value.trim()));
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  };
+
+  // Add handleUpdatePlans function near your other handlers
+  const handleUpdatePlans = async (e) => {
+    e.preventDefault();
+
+    // Validation check
+    if (
+      !singleEditPlan.demand ||
+      !singleEditPlan.destination ||
+      !singleEditPlan.deadline
+    ) {
+      notification.warning({
+        message: "Missing Fields",
+        description: "Please fill in all required fields.",
+        placement: "topRight",
+      });
+      return;
+    }
+
+    try {
+      const plansToUpdate = editData.map((plan) => ({
+        id: plan.id,
+        demand: singleEditPlan.demand,
+        priority: singleEditPlan.priority,
+        destination: singleEditPlan.destination,
+        deadline: moment(singleEditPlan.deadline).format("YYYY-MM-DD"),
+      }));
+
+      await dispatch(updatePlans(plansToUpdate));
+
+      notification.success({
+        message: "Success",
+        description: "Plans updated successfully",
+        placement: "topRight",
+      });
+
+      // Clear selection and close modal
+      setSelectedRowKeys([]);
+      setIsEditModalVisible(false);
+
+      // Refresh the plans list
+      dispatch(fetchPlans(currentPage, pageSize));
+    } catch (error) {
+      notification.error({
+        message: "Error",
+        description: error.message || "Failed to update plans",
+        placement: "topRight",
+      });
+    }
+  };
+
+  const downloadTemplate = () => {
+    const templateData = [
+      ["Deadline", "Demand", "Destination", "Priority"],
+      ["5/15/2024", "100", "Ho Chi Minh City", "High"],
+      ["12/25/2024", "75", "Ha Noi", "Low"],
+      ["1/10/2025", "150", "Da Nang", "High"],
+      ["3/15/2025", "200", "Can Tho", "Low"],
+      ["4/20/2025", "125", "Bien Hoa", "High"],
+    ];
+
+    // Create worksheet
+    const ws = XLSX.utils.aoa_to_sheet(templateData);
+
+    ws["!cols"] = [
+      { width: 15 }, // Deadline
+      { width: 15 }, // Demand
+      { width: 30 }, // Destination
+      { width: 10 }, // Priority
+    ];
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Procurement Plans");
+
+    const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+    const blob = new Blob([excelBuffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    saveAs(blob, "procurement_plan_template.xlsx");
+  };
+
+  const handleFileUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    try {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: "array" });
+        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+        const plans = jsonData.slice(1).map((row) => {
+          let deadline;
+          if (row[0]) {
+            const dateValue = row[0];
+            if (typeof dateValue === "string") {
+              deadline = moment(dateValue, ["M/D/YYYY", "MM/DD/YYYY"]).format(
+                "YYYY-MM-DD"
+              );
+            }
+          }
+          const priority = row[3]?.toString().trim();
+
+          return {
+            plannerId: user.user_id,
+            managerId: "3",
+            deadline: deadline,
+            demand: row[1],
+            destination: row[2],
+            priority: priority,
+          };
+        });
+
+        try {
+          for (const plan of plans) {
+            await dispatch(doAddPlan(plan));
+          }
+
+          notification.success({
+            message: "Success",
+            description: `${plans.length} plans have been added successfully`,
+            placement: "topRight",
+          });
+
+          dispatch(fetchPlans(currentPage, pageSize));
+          handleCloseUploadModal();
+        } catch (error) {
+          console.error("API Error:", error);
+          notification.error({
+            message: "Error",
+            description: error.message || "Failed to add plans",
+            placement: "topRight",
+          });
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    } catch (error) {
+      console.error("File Processing Error:", error);
+      notification.error({
+        message: "Error",
+        description: "Failed to process Excel file",
+        placement: "topRight",
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen">
@@ -342,7 +666,7 @@ const Planner = () => {
 
           <div className="flex space-x-4">
             <button className="border border-gray-300 text-sm font-bold text-[#8F96A9] px-4 py-2 rounded-md hover:bg-gray-100 flex items-center">
-              <FaArrowDown className="mr-2 text-xs" /> Order download
+              <FaArrowDown className="mr-2 text-xs" /> Download CSV
             </button>
             <button
               className="bg-primary text-white text-sm font-bold px-4 py-2 rounded-md hover:bg-orange-600 flex items-center"
@@ -419,7 +743,7 @@ const Planner = () => {
         {/* Filter Bar */}
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <form className="w-96">
+            <form className="w-96" onSubmit={(e) => e.preventDefault()}>
               <label
                 htmlFor="default-search"
                 className="mb-2 text-sm font-medium text-[#8F96A9] sr-only"
@@ -433,7 +757,9 @@ const Planner = () => {
                 <input
                   type="search"
                   id="default-search"
-                  className="block w-full p-2 ps-10 text-sm text-[#8F96A9] border border-gray-300 rounded-lg bg-gray-50 "
+                  value={searchQuery}
+                  onChange={handleSearch}
+                  className="block w-full p-2 ps-10 text-sm text-[#8F96A9] border border-gray-300 rounded-lg bg-gray-50"
                   placeholder="Please enter your ID plans, destination, etc."
                 />
               </div>
@@ -445,8 +771,12 @@ const Planner = () => {
               <TiFilter className="mr-2" />
               Detailed Filter
             </button>
-            <button className="text-primary border border-primary w-30 justify-center rounded-md px-2 py-2 flex items-center text-sm font-bold">
-              Apply Filter
+            <button
+              className="text-primary border border-primary w-30 justify-center rounded-md px-2 py-2 flex items-center text-sm font-bold"
+              onClick={handleApplyFilter}
+              disabled={isLoading}
+            >
+              {isLoading ? "Applying..." : "Apply Filter"}
             </button>
           </div>
         </div>
@@ -468,14 +798,18 @@ const Planner = () => {
               </label>
 
               <div className="relative">
-                <select className="border border-gray-300 text-sm px-4 py-2 pr-10 rounded-md focus:outline-none appearance-none">
-                  <option>Created Date</option>
-                  <option>Deadline</option>
+                <select
+                  className="border border-gray-300 text-sm px-4 py-2 pr-10 rounded-md focus:outline-none appearance-none"
+                  value={dateType}
+                  onChange={(e) => handleDateTypeChange(e.target.value)}
+                >
+                  <option value="createdDate">Created Date</option>
+                  <option value="deadline">Deadline</option>
                 </select>
-                <IoMdArrowDropdown className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500, text-[1.8rem] mt-1" />
+                <IoMdArrowDropdown className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 text-[1.8rem] mt-1" />
               </div>
 
-              <div className="inline-flex rounded-md shadow-sm " role="group">
+              <div className="inline-flex rounded-md shadow-sm" role="group">
                 <button
                   type="button"
                   className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-s-lg ${
@@ -522,12 +856,20 @@ const Planner = () => {
                 </button>
               </div>
 
-              {/* Calendar */}
+              {/* Date Range Picker */}
               <Space direction="vertical" size={12}>
                 <RangePicker
                   className="h-9 hover:bg-gray-200 focus:ring-primary"
-                  value={dateRange} // Set the value of RangePicker
-                  onChange={(dates) => setDateRange(dates)} // Update dateRange when user selects dates
+                  value={dateRange}
+                  onChange={(dates) => setDateRange(dates)}
+                  placeholder={[
+                    `Start ${
+                      dateType === "createdDate" ? "Created Date" : "Deadline"
+                    }`,
+                    `End ${
+                      dateType === "createdDate" ? "Created Date" : "Deadline"
+                    }`,
+                  ]}
                 />
               </Space>
             </div>
@@ -555,7 +897,9 @@ const Planner = () => {
                       ? "bg-orange-100 text-primary border-primary"
                       : ""
                   }`}
-                  onClick={() => setActiveStatus("draft")}
+                  onClick={() => {
+                    setActiveStatus(activeStatus === "draft" ? null : "draft");
+                  }}
                 >
                   Draft
                 </button>
@@ -566,7 +910,11 @@ const Planner = () => {
                       ? "bg-orange-100 text-primary border-primary"
                       : ""
                   }`}
-                  onClick={() => setActiveStatus("pending")}
+                  onClick={() => {
+                    setActiveStatus(
+                      activeStatus === "pending" ? null : "pending"
+                    );
+                  }}
                 >
                   Pending
                 </button>
@@ -577,7 +925,11 @@ const Planner = () => {
                       ? "bg-orange-100 text-primary border-primary"
                       : ""
                   }`}
-                  onClick={() => setActiveStatus("approved")}
+                  onClick={() => {
+                    setActiveStatus(
+                      activeStatus === "approved" ? null : "approved"
+                    );
+                  }}
                 >
                   Approved
                 </button>
@@ -588,7 +940,11 @@ const Planner = () => {
                       ? "bg-orange-100 text-primary border-primary"
                       : ""
                   }`}
-                  onClick={() => setActiveStatus("rejected")}
+                  onClick={() => {
+                    setActiveStatus(
+                      activeStatus === "rejected" ? null : "rejected"
+                    );
+                  }}
                 >
                   Rejected
                 </button>
@@ -599,7 +955,11 @@ const Planner = () => {
                       ? "bg-orange-100 text-primary border-primary"
                       : ""
                   }`}
-                  onClick={() => setActiveStatus("completed")}
+                  onClick={() => {
+                    setActiveStatus(
+                      activeStatus === "completed" ? null : "completed"
+                    );
+                  }}
                 >
                   Completed
                 </button>
@@ -628,7 +988,9 @@ const Planner = () => {
                       ? "bg-orange-100 text-primary border-primary"
                       : ""
                   }`}
-                  onClick={() => setPriorityInput("Low")}
+                  onClick={() => {
+                    setPriorityInput(priorityInput === "Low" ? null : "Low");
+                  }}
                 >
                   Low
                 </button>
@@ -639,7 +1001,9 @@ const Planner = () => {
                       ? "bg-orange-100 text-primary border-primary"
                       : ""
                   }`}
-                  onClick={() => setPriorityInput("High")}
+                  onClick={() => {
+                    setPriorityInput(priorityInput === "High" ? null : "High");
+                  }}
                 >
                   High
                 </button>
@@ -653,7 +1017,7 @@ const Planner = () => {
           <div className="flex space-x-4 items-center">
             <span>Selected Plans: {selectedRowKeys.length}</span>
             <span className="text-gray-400">|</span>
-            <span>Total Plans: {dataSource.length}</span>
+            <span>Total Plans: {plans.total || 0}</span>
             <div className="relative inline-flex items-center">
               <select
                 className="border border-gray-300 text-sm px-4 py-2 pr-8 rounded-md focus:outline-none appearance-none"
@@ -692,14 +1056,19 @@ const Planner = () => {
         <Table
           rowSelection={rowSelection}
           columns={columns}
-          dataSource={limitedDataSource}
+          dataSource={tableData}
+          loading={isLoading}
+          locale={{
+            emptyText: <CustomEmpty onReset={handleResetFilters} />,
+          }}
           pagination={{
             current: currentPage,
-            pageSize: rowsToDisplay,
-            total: dataSource.length,
+            pageSize: pageSize,
+            total: plans.total || 0,
             onChange: (page, pageSize) => {
               setCurrentPage(page);
-              setRowsToDisplay(pageSize);
+              setPageSize(pageSize);
+              dispatch(fetchPlans(page, pageSize));
             },
           }}
           components={{
@@ -756,7 +1125,7 @@ const Planner = () => {
 
       {isSecondModalVisible && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-          <div className="bg-white rounded shadow-lg relative w-1/4 rounded-lg">
+          <div className="bg-white rounded shadow-lg relative w-1/4">
             <div className=" pt-5 px-8">
               <h1 className="text-base text-gray-500 flex justify-between items-center">
                 Add plan
@@ -771,7 +1140,7 @@ const Planner = () => {
               <h2 className="text-xl text-left font-bold mb-5">
                 Plan Information
               </h2>
-              <form className="overflow-hidden">
+              <form className="overflow-hidden" onSubmit={handleAddOneDirectly}>
                 <label>Plan Creation Date</label>
                 <input
                   type="date"
@@ -876,24 +1245,12 @@ const Planner = () => {
                   </button>
                   <button
                     type="submit"
-                    className="bg-primary/50 w-32 font-medium text-white px-4 py-2 rounded-lg flex justify-center items-center hover:bg-primary"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setIsFormSubmitted(true); // Set form submitted state
-                      // Validation check
-                      if (!demandInput || !destination || !deadlineInput) {
-                        notification.warning({
-                          message: "Missing Fields",
-                          description: "Please fill in all required fields.",
-                          placement: "topRight",
-                        });
-                        return;
-                      }
-
-                      handleAddOneDirectly();
-                    }}
+                    className={`bg-primary/50 w-32 font-medium text-white px-4 py-2 rounded-lg 
+                      flex justify-center items-center hover:bg-primary
+                      ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                    disabled={isLoading}
                   >
-                    Add
+                    {isLoading ? "Adding..." : "Add"}
                   </button>
                 </div>
               </form>
@@ -912,26 +1269,33 @@ const Planner = () => {
               <IoMdClose />
             </button>
             <h2 className="text-xl text-center font-bold mb-10">
-              Please upload the route Excel file that will be used for
-              dispatching.
+              Please upload the procurement plan Excel file
             </h2>
             <div className="flex flex-col items-center border border-gray-300 rounded p-5">
               <FaFileUpload className="text-primary w-9 h-9" />
               <span className="my-3 text-sm text-gray-500">
                 Please drag and drop files here
               </span>
-              <label className="border border-gray-300 rounded p-2 mb-4 cursor-pointer text-xs text-gray-500">
+              <label className="border border-gray-300 rounded p-2 mb-4 cursor-pointer text-xs text-gray-500 hover:bg-gray-50">
                 Browse on my PC
-                <input type="file" className="hidden" />
+                <input
+                  type="file"
+                  className="hidden"
+                  accept=".xlsx,.xls"
+                  onChange={handleFileUpload}
+                />
               </label>
             </div>
-            <p className="text-center mt-4 ">
-              Don't have the Root Excel form? Click the button below to download
+            <p className="text-center mt-4">
+              Don&apos;t have the template? Click the button below to download
               it.
             </p>
             <div className="flex justify-center">
-              <button className="mt-2 text-primary font-medium underline">
-                Download Order Upload Excel Form
+              <button
+                className="mt-2 text-primary font-medium underline hover:text-primary/80"
+                onClick={downloadTemplate}
+              >
+                Download Procurement Plan Template
               </button>
             </div>
           </div>
@@ -964,124 +1328,62 @@ const Planner = () => {
             <form>
               {singleEditPlan && (
                 <div className="mb-4">
-                  <label>Plan Creation Date</label>
-                  <input
-                    type="text"
-                    value={
-                      singleEditPlan.createdDate
-                        ? moment(singleEditPlan.createdDate).format(
-                            "YYYY-MM-DD"
-                          )
-                        : ""
-                    }
-                    className="border mt-2 border-gray-300 rounded p-2 w-full mb-2"
-                    readOnly
-                  />
                   <label>Deadline</label>
                   <DatePicker
-                    defaultValue={
+                    value={
                       singleEditPlan.deadline
                         ? moment(singleEditPlan.deadline)
                         : null
                     }
-                    className="border mt-2 border-gray-300 rounded p-2 w-full mb-2"
-                    onChange={(date, dateString) => {
-                      setSingleEditPlan({
-                        ...singleEditPlan,
-                        deadline: dateString,
-                      });
+                    onChange={(date) => {
+                      setSingleEditPlan((prev) => ({
+                        ...prev,
+                        deadline: date ? date.format("YYYY-MM-DD") : null,
+                      }));
                     }}
-                    disabledDate={(current) =>
-                      current && current < moment().startOf("day")
-                    } // Disable past dates
+                    className="border mt-2 border-gray-300 rounded p-2 w-full mb-2"
                   />
+
+                  <label>Priority</label>
+                  <select
+                    value={singleEditPlan.priority}
+                    onChange={(e) => {
+                      setSingleEditPlan((prev) => ({
+                        ...prev,
+                        priority: e.target.value,
+                      }));
+                    }}
+                    className="border mt-2 border-gray-300 rounded p-2 w-full mb-2"
+                  >
+                    <option value="High">High</option>
+                    <option value="Low">Low</option>
+                  </select>
+
                   <label>Demand</label>
                   <input
-                    type="text"
-                    defaultValue={singleEditPlan.demand}
-                    className={`border mt-2 border-gray-300 rounded p-2 w-full mb-2 ${
-                      !singleEditPlan.demand ? "border-red-500" : ""
-                    }`}
+                    type="number"
+                    value={singleEditPlan.demand}
                     onChange={(e) => {
-                      setSingleEditPlan({
-                        ...singleEditPlan,
+                      setSingleEditPlan((prev) => ({
+                        ...prev,
                         demand: e.target.value,
-                      });
+                      }));
                     }}
+                    className="border mt-2 border-gray-300 rounded p-2 w-full mb-2"
                   />
-                  <label>Priority</label>
-                  <div
-                    className="mt-2 mb-4 rounded-md shadow-sm w-full flex"
-                    role="group"
-                  >
-                    <button
-                      type="button"
-                      className={`flex-1 px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-s-lg ${
-                        singleEditPlan.priority === "Low"
-                          ? "bg-orange-100 text-primary border-primary"
-                          : ""
-                      }`}
-                      onClick={() =>
-                        setSingleEditPlan({
-                          ...singleEditPlan,
-                          priority: "Low",
-                        })
-                      }
-                    >
-                      Low
-                    </button>
-                    <button
-                      type="button"
-                      className={`flex-1 px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-e-lg ${
-                        singleEditPlan.priority === "High"
-                          ? "bg-orange-100 text-primary border-primary"
-                          : ""
-                      }`}
-                      onClick={() =>
-                        setSingleEditPlan({
-                          ...singleEditPlan,
-                          priority: "High",
-                        })
-                      }
-                    >
-                      High
-                    </button>
-                  </div>
+
                   <label>Destination</label>
                   <input
                     type="text"
-                    required
                     value={singleEditPlan.destination}
-                    onChange={(event) => {
-                      const value = event.target.value;
-                      setSingleEditPlan({
-                        ...singleEditPlan,
-                        destination: value,
-                      });
-                      fetchPredictions(value);
+                    onChange={(e) => {
+                      setSingleEditPlan((prev) => ({
+                        ...prev,
+                        destination: e.target.value,
+                      }));
                     }}
-                    className="border mt-2 border-gray-300 rounded p-2 w-full mb-1"
-                    placeholder="Enter your destination"
+                    className="border mt-2 border-gray-300 rounded p-2 w-full mb-2"
                   />
-                  {predictions.length > 0 && (
-                    <ul className="border border-gray-300 rounded mt-2 max-h-40 overflow-y-auto">
-                      {predictions.map((prediction) => (
-                        <li
-                          key={prediction.place_id}
-                          className="p-2 hover:bg-gray-100 cursor-pointer"
-                          onClick={() => {
-                            setSingleEditPlan({
-                              ...singleEditPlan,
-                              destination: prediction.description,
-                            });
-                            setPredictions([]);
-                          }}
-                        >
-                          {prediction.description}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
                 </div>
               )}
               <div className="flex justify-end mt-4">
@@ -1095,31 +1397,7 @@ const Planner = () => {
                 <button
                   type="submit"
                   className="bg-primary/50 w-32 font-medium text-white px-4 py-2 rounded-lg flex justify-center items-center hover:bg-primary"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    // Validation check
-                    if (
-                      !singleEditPlan.demand ||
-                      !singleEditPlan.destination ||
-                      !singleEditPlan.deadline
-                    ) {
-                      notification.warning({
-                        message: "Missing Fields",
-                        description: "Please fill in all required fields.",
-                        placement: "topRight",
-                      });
-                      return;
-                    }
-                    // Logic to save edited plan back to dataSource
-                    setDataSource((prevData) =>
-                      prevData.map((item) =>
-                        selectedRowKeys.includes(item.key)
-                          ? { ...item, ...singleEditPlan }
-                          : item
-                      )
-                    );
-                    setIsEditModalVisible(false);
-                  }}
+                  onClick={handleUpdatePlans}
                 >
                   Save
                 </button>
