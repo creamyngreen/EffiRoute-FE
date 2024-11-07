@@ -676,6 +676,7 @@ const Planner = () => {
     const csvBuffer = XLSX.write(workbook, { bookType: "csv", type: "array" });
     const blob = new Blob([csvBuffer], { type: "text/csv;charset=utf-8;" });
     saveAs(blob, "selected_plans.csv");
+  };
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
@@ -1497,5 +1498,6 @@ const Planner = () => {
     </div>
   );
 };
+
 
 export default Planner;
