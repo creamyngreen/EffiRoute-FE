@@ -25,7 +25,10 @@ import {
 } from "../../redux/action/plannerAction";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
+import dayjs from "dayjs";
+import customParseFormat from "dayjs/plugin/customParseFormat";
 
+dayjs.extend(customParseFormat);
 const getStatusTag = (status) => {
   switch (status) {
     case "Completed":
@@ -276,8 +279,6 @@ const Planner = () => {
     }
 
     try {
-      console.log("Selected priority:", modalPriorityInput);
-
       const planData = {
         plannerId: user.user_id,
         managerId: "3",
@@ -286,13 +287,8 @@ const Planner = () => {
         priority: modalPriorityInput === "High" ? 1 : 0,
         demand: demandInput,
       };
-
-      console.log("Plan data being sent:", planData);
-
-      // Call API through Redux action
       await dispatch(doAddPlan(planData));
 
-      // Refresh the plans list
       await dispatch(fetchPlans(currentPage, pageSize));
 
       notification.success({
@@ -408,76 +404,72 @@ const Planner = () => {
   // Handle date type change
   const handleDateTypeChange = (type) => {
     setDateType(type);
-    // Reset active timeframe and date range when switching date types
     setActiveTimeFrame(null);
     setDateRange([null, null]);
   };
 
-  // Handle timeframe selection
   const handleTimeFrameChange = (timeFrame) => {
+    if (timeFrame === activeTimeFrame) {
+      setActiveTimeFrame(null);
+      return;
+    }
+
     setActiveTimeFrame(timeFrame);
 
-    const today = moment();
+    const today = dayjs();
     let startDate;
-    const currentEndDate = dateRange[1] ? moment(dateRange[1]) : today;
+    const endDate = dateRange?.[1] ? dayjs(dateRange[1]) : today;
+    const getToday = () => today.startOf("day");
 
     switch (timeFrame) {
       case "today":
-        startDate = today.startOf("day");
+        startDate = getToday();
         break;
       case "1week":
-        startDate = moment(currentEndDate).subtract(1, "week").startOf("day");
+        startDate = getToday().subtract(1, "week").startOf("day");
         break;
       case "1month":
-        startDate = moment(currentEndDate).subtract(1, "month").startOf("day");
+        startDate = getToday().subtract(1, "month").startOf("day");
         break;
       case "3months":
-        startDate = moment(currentEndDate).subtract(3, "months").startOf("day");
+        startDate = getToday().subtract(3, "months").startOf("day");
         break;
       default:
         return;
     }
 
-    setDateRange([startDate, dateRange[1]]);
+    setDateRange([startDate, endDate]);
   };
 
   // Handle apply filter
-  const handleApplyFilter = async () => {
-    try {
-      setCurrentPage(1);
-      const filters = {
-        status: activeTab === "all" ? activeStatus : activeTab,
-        priority:
-          priorityInput === "High" ? 1 : priorityInput === "Low" ? 0 : null,
-        initialFrom:
-          dateType === "createdDate"
-            ? dateRange[0]?.format("YYYY-MM-DD")
-            : null,
-        initialTo:
-          dateType === "createdDate"
-            ? dateRange[1]?.format("YYYY-MM-DD")
-            : null,
-        deadlineFrom:
-          dateType === "deadline" ? dateRange[0]?.format("YYYY-MM-DD") : null,
-        deadlineTo:
-          dateType === "deadline" ? dateRange[1]?.format("YYYY-MM-DD") : null,
-      };
+  const handleApplyFilter = () => {
+    const filters = {};
 
-      // Remove null values
-      Object.keys(filters).forEach(
-        (key) =>
-          (filters[key] === null || filters[key] === undefined) &&
-          delete filters[key]
-      );
-
-      // Save current filters
-      setCurrentFilters(filters);
-
-      await dispatch(fetchPlans(1, pageSize, filters));
-      setSelectedRowKeys([]);
-    } catch (error) {
-      console.error("Filter error:", error);
+    if (dateRange && dateRange[0] && dateRange[1]) {
+      if (dateType === "createdDate") {
+        filters.initialFrom = dateRange[0].format("YYYY-MM-DD");
+        filters.initialTo = dateRange[1].format("YYYY-MM-DD");
+      } else {
+        filters.deadlineFrom = dateRange[0].format("YYYY-MM-DD");
+        filters.deadlineTo = dateRange[1].format("YYYY-MM-DD");
+      }
     }
+
+    // Add other filters if they exist
+    if (priorityInput) {
+      filters.priority = priorityInput === "High" ? 1 : 0;
+    }
+
+    if (demandInput) {
+      filters.demand = demandInput;
+    }
+
+    if (activeStatus && activeStatus !== "all") {
+      filters.status = activeStatus;
+    }
+
+    setCurrentFilters(filters);
+    dispatch(fetchPlans(currentPage, pageSize, filters));
   };
 
   const handleSearch = (e) => {
@@ -644,7 +636,6 @@ const Planner = () => {
     }
   };
 
-
   const downloadCSV = () => {
     if (selectedRowKeys.length === 0) {
       notification.warning({
@@ -676,11 +667,12 @@ const Planner = () => {
     const csvBuffer = XLSX.write(workbook, { bookType: "csv", type: "array" });
     const blob = new Blob([csvBuffer], { type: "text/csv;charset=utf-8;" });
     saveAs(blob, "selected_plans.csv");
+  };
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     setCurrentPage(1);
-    setSelectedRowKeys([]); // Clear selected rows when changing tabs
+    setSelectedRowKeys([]);
 
     // Reset filters
     setPriorityInput(null);
@@ -692,7 +684,26 @@ const Planner = () => {
     const filters = tab === "all" ? {} : { status: tab };
     setCurrentFilters(filters); // Update current filters
     dispatch(fetchPlans(1, pageSize, filters));
+  };
 
+  // get the header text based on activeTab
+  const getHeaderText = (tab) => {
+    switch (tab) {
+      case "all":
+        return "Manage Entire Plans";
+      case "draft":
+        return "Manage Draft Plans";
+      case "pending":
+        return "Manage Pending Plans";
+      case "approved":
+        return "Manage Approved Plans";
+      case "rejected":
+        return "Manage Rejected Plans";
+      case "completed":
+        return "Manage Completed Plans";
+      default:
+        return "Manage Plans";
+    }
   };
 
   return (
@@ -706,7 +717,7 @@ const Planner = () => {
             </h1>
             <span className="text-gray-400">|</span>
             <h2 className="text-black text-xl font-bold">
-              Manage pending plans
+              {getHeaderText(activeTab)}
             </h2>
           </div>
 
@@ -727,7 +738,10 @@ const Planner = () => {
         </div>
 
         <p className="text-gray-500 mt-2">
-          This page allows you to manage pending plans and check their status.
+          This page allows you to{" "}
+          {activeTab === "all"
+            ? "manage all plans and check their status."
+            : `manage ${activeTab} plans`}{" "}
         </p>
       </div>
 
@@ -910,7 +924,25 @@ const Planner = () => {
                 <RangePicker
                   className="h-9 hover:bg-gray-200 focus:ring-primary"
                   value={dateRange}
-                  onChange={(dates) => setDateRange(dates)}
+                  onChange={(dates) => {
+                    setDateRange(dates);
+                    setActiveTimeFrame(null);
+                    // Optionally, you can auto-apply filters when dates are cleared
+                    if (!dates) {
+                      const updatedFilters = { ...currentFilters };
+                      if (dateType === "createdDate") {
+                        delete updatedFilters.initialFrom;
+                        delete updatedFilters.initialTo;
+                      } else {
+                        delete updatedFilters.deadlineFrom;
+                        delete updatedFilters.deadlineTo;
+                      }
+                      setCurrentFilters(updatedFilters);
+                      dispatch(
+                        fetchPlans(currentPage, pageSize, updatedFilters)
+                      );
+                    }
+                  }}
                   placeholder={[
                     `Start ${
                       dateType === "createdDate" ? "Created Date" : "Deadline"
@@ -919,6 +951,8 @@ const Planner = () => {
                       dateType === "createdDate" ? "Created Date" : "Deadline"
                     }`,
                   ]}
+                  allowClear={true}
+                  format="YYYY-MM-DD"
                 />
               </Space>
             </div>
@@ -1201,7 +1235,7 @@ const Planner = () => {
                 <label>Plan Creation Date</label>
                 <input
                   type="date"
-                  value={new Date().toISOString().split("T")[0]} // Set current date
+                  value={new Date().toISOString().split("T")[0]}
                   className="border mt-2 border-gray-300 rounded p-2 w-full mb-4"
                   readOnly
                 />
@@ -1210,7 +1244,7 @@ const Planner = () => {
                   onChange={(date, dateString) => setDeadlineInput(dateString)}
                   className={`border mt-2 border-gray-300 rounded p-2 w-full mb-4 ${
                     isFormSubmitted && !deadlineInput ? "border-red-500" : ""
-                  }`} // Highlight if empty on submit
+                  }`}
                   placeholder="Select your deadline"
                   required
                   disabledDate={(current) =>
@@ -1391,9 +1425,9 @@ const Planner = () => {
                 <div className="mb-4">
                   <label>Deadline</label>
                   <DatePicker
-                    value={
+                    defaultValue={
                       singleEditPlan.deadline
-                        ? moment(singleEditPlan.deadline)
+                        ? dayjs(singleEditPlan.deadline, "YYYY-MM-DD")
                         : null
                     }
                     onChange={(date) => {
