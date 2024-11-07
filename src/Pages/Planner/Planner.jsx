@@ -709,34 +709,34 @@ const Planner = () => {
   return (
     <div className="min-h-screen">
       <NavBarPlanner />
-      <div className="px-6 py-4 bg-white mx-10">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
+      {/* Main Header Section */}
+      <div className="px-4 sm:px-6 lg:px-10 py-4 bg-white mx-2 sm:mx-6 lg:mx-10">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
             <h1 className="text-orange-500 text-xl font-semibold">
               Automatic Dispatch
             </h1>
-            <span className="text-gray-400">|</span>
+            <span className="hidden sm:block text-gray-400">|</span>
             <h2 className="text-black text-xl font-bold">
               {getHeaderText(activeTab)}
             </h2>
           </div>
 
-          <div className="flex space-x-4">
+          <div className="flex flex-col sm:flex-row gap-2 sm:space-x-4">
             <button
-              className="border border-gray-300 text-sm font-bold text-[#8F96A9] px-4 py-2 rounded-md hover:bg-gray-100 flex items-center"
+              className="border border-gray-300 text-sm font-bold text-[#8F96A9] px-4 py-2 rounded-md hover:bg-gray-100 flex items-center justify-center"
               onClick={downloadCSV}
             >
               <FaArrowDown className="mr-2 text-xs" /> Download CSV
             </button>
             <button
-              className="bg-primary text-white text-sm font-bold px-4 py-2 rounded-md hover:bg-orange-600 flex items-center"
+              className="bg-primary text-white text-sm font-bold px-4 py-2 rounded-md hover:bg-orange-600 flex items-center justify-center"
               onClick={showModal}
             >
               <FaPlus className="mr-2 text-xs" /> Add Plan
             </button>
           </div>
         </div>
-
         <p className="text-gray-500 mt-2">
           This page allows you to{" "}
           {activeTab === "all"
@@ -745,68 +745,75 @@ const Planner = () => {
         </p>
       </div>
 
-      <div className="px-6 py-4 bg-white mx-6 mt-6 ">
-        <div className="inline-flex rounded-md shadow-sm mb-4" role="group">
-          <button
-            type="button"
-            className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 ${
-              activeTab === "all" ? "bg-gray-100 text-primary" : ""
-            }`}
-            onClick={() => handleTabChange("all")}
-          >
-            View Entire Plans
-          </button>
-          <button
-            type="button"
-            className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 ${
-              activeTab === "draft" ? "bg-gray-100 text-primary" : ""
-            }`}
-            onClick={() => handleTabChange("draft")}
-          >
-            View Draft Plans
-          </button>
-          <button
-            type="button"
-            className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 ${
-              activeTab === "pending" ? "bg-gray-100 text-primary" : ""
-            }`}
-            onClick={() => handleTabChange("pending")}
-          >
-            Manage Pending Plans
-          </button>
-          <button
-            type="button"
-            className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 ${
-              activeTab === "approved" ? "bg-gray-100 text-primary" : ""
-            }`}
-            onClick={() => handleTabChange("approved")}
-          >
-            Manage Approved Plans
-          </button>
-          <button
-            type="button"
-            className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 ${
-              activeTab === "completed" ? "bg-gray-100 text-primary" : ""
-            }`}
-            onClick={() => handleTabChange("completed")}
-          >
-            Manage Completed Plans
-          </button>
-          <button
-            type="button"
-            className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-e-lg ${
-              activeTab === "rejected" ? "bg-gray-100 text-primary" : ""
-            }`}
-            onClick={() => handleTabChange("rejected")}
-          >
-            Manage Rejected Plans
-          </button>
+      {/* Main Content Section */}
+      <div className="px-4 sm:px-6 lg:px-10 py-4 bg-white mx-2 sm:mx-6 mt-6">
+        {/* Tab Navigation - Make it scrollable on mobile */}
+        <div className="overflow-x-auto">
+          <div className="inline-flex rounded-md shadow-sm mb-4 min-w-max">
+            <button
+              type="button"
+              className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 ${
+                activeTab === "all" ? "bg-gray-100 text-primary" : ""
+              }`}
+              onClick={() => handleTabChange("all")}
+            >
+              View Entire Plans
+            </button>
+            <button
+              type="button"
+              className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 ${
+                activeTab === "draft" ? "bg-gray-100 text-primary" : ""
+              }`}
+              onClick={() => handleTabChange("draft")}
+            >
+              View Draft Plans
+            </button>
+            <button
+              type="button"
+              className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 ${
+                activeTab === "pending" ? "bg-gray-100 text-primary" : ""
+              }`}
+              onClick={() => handleTabChange("pending")}
+            >
+              Manage Pending Plans
+            </button>
+            <button
+              type="button"
+              className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 ${
+                activeTab === "approved" ? "bg-gray-100 text-primary" : ""
+              }`}
+              onClick={() => handleTabChange("approved")}
+            >
+              Manage Approved Plans
+            </button>
+            <button
+              type="button"
+              className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 ${
+                activeTab === "completed" ? "bg-gray-100 text-primary" : ""
+              }`}
+              onClick={() => handleTabChange("completed")}
+            >
+              Manage Completed Plans
+            </button>
+            <button
+              type="button"
+              className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-e-lg ${
+                activeTab === "rejected" ? "bg-gray-100 text-primary" : ""
+              }`}
+              onClick={() => handleTabChange("rejected")}
+            >
+              Manage Rejected Plans
+            </button>
+          </div>
         </div>
 
         {/* Filter Bar */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <form className="w-96" onSubmit={(e) => e.preventDefault()}>
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+            <form
+              className="w-full lg:w-96"
+              onSubmit={(e) => e.preventDefault()}
+            >
               <label
                 htmlFor="default-search"
                 className="mb-2 text-sm font-medium text-[#8F96A9] sr-only"
@@ -827,28 +834,31 @@ const Planner = () => {
                 />
               </div>
             </form>
-            <button
-              className="text-[#8F96A9] border border-gray-300 rounded-md px-2 py-2 flex items-center text-sm font-bold"
-              onClick={toggleDetailedFilter}
-            >
-              <TiFilter className="mr-2" />
-              Detailed Filter
-            </button>
-            <button
-              className="text-primary border border-primary w-30 justify-center rounded-md px-2 py-2 flex items-center text-sm font-bold"
-              onClick={handleApplyFilter}
-              disabled={isLoading}
-            >
-              {isLoading ? "Applying..." : "Apply Filter"}
-            </button>
+            <div className="flex gap-2">
+              <button
+                className="text-[#8F96A9] border border-gray-300 rounded-md px-2 py-2 flex items-center text-sm font-bold"
+                onClick={toggleDetailedFilter}
+              >
+                <TiFilter className="mr-2" />
+                Detailed Filter
+              </button>
+              <button
+                className="text-primary border border-primary justify-center rounded-md px-2 py-2 flex items-center text-sm font-bold flex-1"
+                onClick={handleApplyFilter}
+                disabled={isLoading}
+              >
+                {isLoading ? "Applying..." : "Apply Filter"}
+              </button>
+            </div>
           </div>
         </div>
 
+        {/* Detailed Filter Section */}
         {isDetailedFilterVisible && (
-          <>
+          <div className="mt-4 space-y-4">
             {/* Inquiry Period */}
-            <div className="mt-4 flex items-center space-x-4">
-              <label className="text-gray-600 flex items-center">
+            <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+              <label className="text-gray-600 flex items-center whitespace-nowrap">
                 Inquiry period
                 <div className="relative group ml-2">
                   <div className="w-4 h-4 bg-gray-400 text-white rounded-full flex items-center justify-center cursor-pointer">
@@ -860,199 +870,209 @@ const Planner = () => {
                 </div>
               </label>
 
-              <div className="relative">
-                <select
-                  className="border border-gray-300 text-sm px-4 py-2 pr-10 rounded-md focus:outline-none appearance-none"
-                  value={dateType}
-                  onChange={(e) => handleDateTypeChange(e.target.value)}
-                >
-                  <option value="createdDate">Created Date</option>
-                  <option value="deadline">Deadline</option>
-                </select>
-                <IoMdArrowDropdown className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 text-[1.8rem] mt-1" />
-              </div>
+              <div className="flex flex-col sm:flex-row gap-4 w-full">
+                <div className="relative w-full sm:w-auto">
+                  <select
+                    className="w-full sm:w-auto border border-gray-300 text-sm px-4 py-2 pr-10 rounded-md focus:outline-none appearance-none"
+                    value={dateType}
+                    onChange={(e) => handleDateTypeChange(e.target.value)}
+                  >
+                    <option value="createdDate">Created Date</option>
+                    <option value="deadline">Deadline</option>
+                  </select>
+                  <IoMdArrowDropdown className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 text-[1.8rem] mt-1" />
+                </div>
 
-              <div className="inline-flex rounded-md shadow-sm" role="group">
-                <button
-                  type="button"
-                  className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-s-lg ${
-                    activeTimeFrame === "today"
-                      ? "bg-orange-100 text-primary border-primary"
-                      : ""
-                  }`}
-                  onClick={() => handleTimeFrameChange("today")}
-                >
-                  Today
-                </button>
-                <button
-                  type="button"
-                  className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 ${
-                    activeTimeFrame === "1week"
-                      ? "bg-orange-100 text-primary border-primary"
-                      : ""
-                  }`}
-                  onClick={() => handleTimeFrameChange("1week")}
-                >
-                  1 Week
-                </button>
-                <button
-                  type="button"
-                  className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 ${
-                    activeTimeFrame === "1month"
-                      ? "bg-orange-100 text-primary border-primary"
-                      : ""
-                  }`}
-                  onClick={() => handleTimeFrameChange("1month")}
-                >
-                  1 Month
-                </button>
-                <button
-                  type="button"
-                  className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-e-lg ${
-                    activeTimeFrame === "3months"
-                      ? "bg-orange-100 text-primary border-primary"
-                      : ""
-                  }`}
-                  onClick={() => handleTimeFrameChange("3months")}
-                >
-                  3 Months
-                </button>
-              </div>
+                <div className="flex flex-wrap gap-2">
+                  {/* Time frame buttons - Make them wrap on smaller screens */}
+                  <button
+                    type="button"
+                    className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-300 rounded-lg flex-1 sm:flex-none ${
+                      activeTimeFrame === "today"
+                        ? "bg-orange-100 text-primary border-primary"
+                        : ""
+                    }`}
+                    onClick={() => handleTimeFrameChange("today")}
+                  >
+                    Today
+                  </button>
+                  <button
+                    type="button"
+                    className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-300 rounded-lg flex-1 sm:flex-none ${
+                      activeTimeFrame === "1week"
+                        ? "bg-orange-100 text-primary border-primary"
+                        : ""
+                    }`}
+                    onClick={() => handleTimeFrameChange("1week")}
+                  >
+                    1 Week
+                  </button>
+                  <button
+                    type="button"
+                    className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-300 rounded-lg flex-1 sm:flex-none ${
+                      activeTimeFrame === "1month"
+                        ? "bg-orange-100 text-primary border-primary"
+                        : ""
+                    }`}
+                    onClick={() => handleTimeFrameChange("1month")}
+                  >
+                    1 Month
+                  </button>
+                  <button
+                    type="button"
+                    className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-300 rounded-lg flex-1 sm:flex-none ${
+                      activeTimeFrame === "3months"
+                        ? "bg-orange-100 text-primary border-primary"
+                        : ""
+                    }`}
+                    onClick={() => handleTimeFrameChange("3months")}
+                  >
+                    3 Months
+                  </button>
+                </div>
 
-              {/* Date Range Picker */}
-              <Space direction="vertical" size={12}>
-                <RangePicker
-                  className="h-9 hover:bg-gray-200 focus:ring-primary"
-                  value={dateRange}
-                  onChange={(dates) => {
-                    setDateRange(dates);
-                    setActiveTimeFrame(null);
-                    // Optionally, you can auto-apply filters when dates are cleared
-                    if (!dates) {
-                      const updatedFilters = { ...currentFilters };
-                      if (dateType === "createdDate") {
-                        delete updatedFilters.initialFrom;
-                        delete updatedFilters.initialTo;
-                      } else {
-                        delete updatedFilters.deadlineFrom;
-                        delete updatedFilters.deadlineTo;
+                <Space
+                  direction="vertical"
+                  size={12}
+                  className="w-full sm:w-auto"
+                >
+                  <RangePicker
+                    className="w-full sm:w-auto h-9"
+                    value={dateRange}
+                    onChange={(dates) => {
+                      setDateRange(dates);
+                      setActiveTimeFrame(null);
+                      // Optionally, you can auto-apply filters when dates are cleared
+                      if (!dates) {
+                        const updatedFilters = { ...currentFilters };
+                        if (dateType === "createdDate") {
+                          delete updatedFilters.initialFrom;
+                          delete updatedFilters.initialTo;
+                        } else {
+                          delete updatedFilters.deadlineFrom;
+                          delete updatedFilters.deadlineTo;
+                        }
+                        setCurrentFilters(updatedFilters);
+                        dispatch(
+                          fetchPlans(currentPage, pageSize, updatedFilters)
+                        );
                       }
-                      setCurrentFilters(updatedFilters);
-                      dispatch(
-                        fetchPlans(currentPage, pageSize, updatedFilters)
-                      );
-                    }
-                  }}
-                  placeholder={[
-                    `Start ${
-                      dateType === "createdDate" ? "Created Date" : "Deadline"
-                    }`,
-                    `End ${
-                      dateType === "createdDate" ? "Created Date" : "Deadline"
-                    }`,
-                  ]}
-                  allowClear={true}
-                  format="YYYY-MM-DD"
-                />
-              </Space>
+                    }}
+                    placeholder={[
+                      `Start ${
+                        dateType === "createdDate" ? "Created Date" : "Deadline"
+                      }`,
+                      `End ${
+                        dateType === "createdDate" ? "Created Date" : "Deadline"
+                      }`,
+                    ]}
+                    allowClear={true}
+                    format="YYYY-MM-DD"
+                  />
+                </Space>
+              </div>
             </div>
 
-            {/* Only show Plan Status filter when on "View Entire Plans" tab */}
+            {/* Status and Priority Filters */}
             {activeTab === "all" && (
-              <div className="mt-4 flex space-x-8">
-                <div className="flex items-center space-x-2">
+              <div className="mt-4 flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:space-x-8">
+                <div className="flex items-center space-x-2 whitespace-nowrap">
                   <label className="text-gray-600 flex items-center">
                     Plan Status
                     <div className="relative group ml-2">
                       <div className="w-4 h-4 bg-gray-400 text-white rounded-full flex items-center justify-center cursor-pointer">
                         i
                       </div>
-                      <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full mt-2 hidden group-hover:block bg-white text-primary text-xs rounded py-1 px-2 w-40 border border-gray-300">
+                      <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full mt-2 hidden group-hover:block bg-white text-primary text-xs rounded py-1 px-2 w-40 border border-gray-300 z-10">
                         This is a plan status filter
                       </div>
                     </div>
                   </label>
                 </div>
-                <div className="inline-flex rounded-md shadow-sm " role="group">
-                  <button
-                    type="button"
-                    className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-s-lg ${
-                      activeStatus === "draft"
-                        ? "bg-orange-100 text-primary border-primary"
-                        : ""
-                    }`}
-                    onClick={() => {
-                      setActiveStatus(
-                        activeStatus === "draft" ? null : "draft"
-                      );
-                    }}
+                <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+                  <div
+                    className="inline-flex rounded-md shadow-sm min-w-max"
+                    role="group"
                   >
-                    Draft
-                  </button>
-                  <button
-                    type="button"
-                    className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 ${
-                      activeStatus === "pending"
-                        ? "bg-orange-100 text-primary border-primary"
-                        : ""
-                    }`}
-                    onClick={() => {
-                      setActiveStatus(
-                        activeStatus === "pending" ? null : "pending"
-                      );
-                    }}
-                  >
-                    Pending
-                  </button>
-                  <button
-                    type="button"
-                    className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 ${
-                      activeStatus === "approved"
-                        ? "bg-orange-100 text-primary border-primary"
-                        : ""
-                    }`}
-                    onClick={() => {
-                      setActiveStatus(
-                        activeStatus === "approved" ? null : "approved"
-                      );
-                    }}
-                  >
-                    Approved
-                  </button>
-                  <button
-                    type="button"
-                    className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 ${
-                      activeStatus === "rejected"
-                        ? "bg-orange-100 text-primary border-primary"
-                        : ""
-                    }`}
-                    onClick={() => {
-                      setActiveStatus(
-                        activeStatus === "rejected" ? null : "rejected"
-                      );
-                    }}
-                  >
-                    Rejected
-                  </button>
-                  <button
-                    type="button"
-                    className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-e-lg ${
-                      activeStatus === "completed"
-                        ? "bg-orange-100 text-primary border-primary"
-                        : ""
-                    }`}
-                    onClick={() => {
-                      setActiveStatus(
-                        activeStatus === "completed" ? null : "completed"
-                      );
-                    }}
-                  >
-                    Completed
-                  </button>
+                    <button
+                      type="button"
+                      className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-s-lg ${
+                        activeStatus === "draft"
+                          ? "bg-orange-100 text-primary border-primary"
+                          : ""
+                      }`}
+                      onClick={() => {
+                        setActiveStatus(
+                          activeStatus === "draft" ? null : "draft"
+                        );
+                      }}
+                    >
+                      Draft
+                    </button>
+                    <button
+                      type="button"
+                      className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 ${
+                        activeStatus === "pending"
+                          ? "bg-orange-100 text-primary border-primary"
+                          : ""
+                      }`}
+                      onClick={() => {
+                        setActiveStatus(
+                          activeStatus === "pending" ? null : "pending"
+                        );
+                      }}
+                    >
+                      Pending
+                    </button>
+                    <button
+                      type="button"
+                      className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 ${
+                        activeStatus === "approved"
+                          ? "bg-orange-100 text-primary border-primary"
+                          : ""
+                      }`}
+                      onClick={() => {
+                        setActiveStatus(
+                          activeStatus === "approved" ? null : "approved"
+                        );
+                      }}
+                    >
+                      Approved
+                    </button>
+                    <button
+                      type="button"
+                      className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 ${
+                        activeStatus === "rejected"
+                          ? "bg-orange-100 text-primary border-primary"
+                          : ""
+                      }`}
+                      onClick={() => {
+                        setActiveStatus(
+                          activeStatus === "rejected" ? null : "rejected"
+                        );
+                      }}
+                    >
+                      Rejected
+                    </button>
+                    <button
+                      type="button"
+                      className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-e-lg ${
+                        activeStatus === "completed"
+                          ? "bg-orange-100 text-primary border-primary"
+                          : ""
+                      }`}
+                      onClick={() => {
+                        setActiveStatus(
+                          activeStatus === "completed" ? null : "completed"
+                        );
+                      }}
+                    >
+                      Completed
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
-            {/* Plan Priority */}
             <div className="mt-4 flex space-x-8">
               <div className="flex items-center space-x-2">
                 <label className="text-gray-600 flex items-center">
@@ -1096,12 +1116,12 @@ const Planner = () => {
                 </button>
               </div>
             </div>
-          </>
+          </div>
         )}
 
-        {/* Plans Summary */}
-        <div className="flex justify-between items-center mt-10 mb-5 text-gray-600">
-          <div className="flex space-x-4 items-center">
+        {/* Plans Summary and Actions */}
+        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center mt-10 mb-5 text-gray-600 gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
             <span>Selected Plans: {selectedRowKeys.length}</span>
             <span className="text-gray-400">|</span>
             <span>Total Plans: {plans.total || 0}</span>
@@ -1120,65 +1140,71 @@ const Planner = () => {
             </div>
           </div>
 
-          <div className="flex space-x-2">
-            <button className="bg-orange-50 text-primary font-bold  px-4 py-2 rounded-md hover:bg-primary hover:text-white ">
+          <div className="flex flex-wrap gap-2">
+            <button className="flex-1 sm:flex-none bg-orange-50 text-primary font-bold px-2 py-1 sm:px-4 sm:py-2 rounded-md hover:bg-primary hover:text-white text-sm sm:text-base">
               Optimize Based on Selected Plan
             </button>
             <button
-              className="bg-white flex items-center text-[#8F96A9] border font-bold border-gray-300 px-4 py-2 rounded-md hover:bg-gray-200"
+              className="bg-white flex items-center text-[#8F96A9] border font-bold border-gray-300 px-2 py-1 sm:px-4 sm:py-2 rounded-md hover:bg-gray-200 text-sm sm:text-base"
               onClick={handleDeletePlans}
             >
-              <RiDeleteBack2Line className="mr-2 " />
+              <RiDeleteBack2Line className="mr-1 sm:mr-2 text-sm sm:text-base" />
               Withdraw Plan
             </button>
             <button
-              className="bg-white text-[#8F96A9] border font-bold border-gray-300 px-4 py-2 rounded-md hover:bg-gray-200"
+              className="bg-white text-[#8F96A9] border font-bold border-gray-300 px-2 py-1 sm:px-4 sm:py-2 rounded-md hover:bg-gray-200 text-sm sm:text-base"
               onClick={handleEditPlans}
             >
               Edit Plan Information
             </button>
           </div>
         </div>
+
         {/* Table */}
-        <Table
-          rowSelection={rowSelection}
-          columns={columns}
-          dataSource={tableData}
-          loading={isLoading}
-          locale={{
-            emptyText: <CustomEmpty />,
-          }}
-          pagination={{
-            current: currentPage,
-            pageSize: pageSize,
-            total: plans?.total || 0,
-            showSizeChanger: true,
-            showTotal: (total, range) =>
-              `${range[0]}-${range[1]} of ${total} items`,
-            onChange: (page, size) => {
-              setCurrentPage(page);
-              setPageSize(size);
-              // Use the saved filters
-              dispatch(fetchPlans(page, size, currentFilters));
-            },
-          }}
-          components={{
-            header: {
-              cell: (props) => (
-                <th
-                  {...props}
-                  style={{ backgroundColor: "#f0f0f0", color: "#000" }}
-                >
-                  {props.children}
-                </th>
-              ),
-            },
-          }}
-        />
+        <div className="overflow-x-auto">
+          <Table
+            rowSelection={rowSelection}
+            columns={columns}
+            dataSource={tableData}
+            loading={isLoading}
+            locale={{
+              emptyText: <CustomEmpty />,
+            }}
+            pagination={{
+              current: currentPage,
+              pageSize: pageSize,
+              total: plans?.total || 0,
+              showSizeChanger: true,
+              showTotal: (total, range) =>
+                `${range[0]}-${range[1]} of ${total} items`,
+              onChange: (page, size) => {
+                setCurrentPage(page);
+                setPageSize(size);
+                // Use the saved filters
+                dispatch(fetchPlans(page, size, currentFilters));
+              },
+            }}
+            components={{
+              header: {
+                cell: (props) => (
+                  <th
+                    {...props}
+                    style={{ backgroundColor: "#f0f0f0", color: "#000" }}
+                  >
+                    {props.children}
+                  </th>
+                ),
+              },
+            }}
+            scroll={{ x: true }} // Enable horizontal scrolling
+          />
+        </div>
       </div>
+
+      {/* Modals - Update modal widths for different screen sizes */}
       {isModalVisible && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-          <div className="bg-white p-8 rounded shadow-lg relative w-2/5">
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 p-4">
+          <div className="bg-white p-6 sm:p-8 rounded shadow-lg relative w-full max-w-2xl mx-4">
             <button
               className="absolute top-2 right-2 text-gray-400 text-xl"
               onClick={handleCloseModal}
@@ -1215,118 +1241,135 @@ const Planner = () => {
       )}
 
       {isSecondModalVisible && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-          <div className="bg-white rounded shadow-lg relative w-1/4">
-            <div className=" pt-5 px-8">
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 p-4">
+          <div className="bg-white rounded-lg shadow-lg relative w-full max-w-xl max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white pt-5 px-4 sm:px-8 z-10">
               <h1 className="text-base text-gray-500 flex justify-between items-center">
                 Add plan
                 <IoMdClose
-                  className="cursor-pointer text-gray-400"
+                  className="cursor-pointer text-gray-400 text-xl"
                   onClick={() => setIsSecondModalVisible(false)}
                 />
               </h1>
+              <hr className="my-5" />
             </div>
-            <hr className="my-5" />
-            <div className="px-8 pb-8">
+
+            <div className="px-4 sm:px-8 pb-8">
               <h2 className="text-xl text-left font-bold mb-5">
                 Plan Information
               </h2>
-              <form className="overflow-hidden" onSubmit={handleAddOneDirectly}>
-                <label>Plan Creation Date</label>
-                <input
-                  type="date"
-                  value={new Date().toISOString().split("T")[0]}
-                  className="border mt-2 border-gray-300 rounded p-2 w-full mb-4"
-                  readOnly
-                />
-                <label>Deadline</label>
-                <DatePicker
-                  onChange={(date, dateString) => setDeadlineInput(dateString)}
-                  className={`border mt-2 border-gray-300 rounded p-2 w-full mb-4 ${
-                    isFormSubmitted && !deadlineInput ? "border-red-500" : ""
-                  }`}
-                  placeholder="Select your deadline"
-                  required
-                  disabledDate={(current) =>
-                    current && current < moment().startOf("day")
-                  } // Disable past dates
-                />
-                <label>Demand</label>
-                <input
-                  type="text"
-                  required
-                  value={demandInput}
-                  onChange={(e) => setDemandInput(e.target.value)}
-                  className={`border mt-2 border-gray-300 rounded p-2 w-full mb-4 ${
-                    isFormSubmitted && !demandInput ? "border-red-500" : ""
-                  }`} // Highlight if empty on submit
-                  placeholder="Enter your demand"
-                />
-
-                <label>Plan Priority</label>
-                <div
-                  className="mt-2 mb-4 rounded-md shadow-sm w-full flex"
-                  role="group"
-                >
-                  <button
-                    type="button"
-                    className={`flex-1 px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-s-lg ${
-                      modalPriorityInput === "Low"
-                        ? "bg-orange-100 text-primary border-primary"
-                        : ""
-                    }`}
-                    onClick={() => {
-                      setModalPriorityInput("Low");
-                    }}
-                  >
-                    Low
-                  </button>
-                  <button
-                    type="button"
-                    className={`flex-1 px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-e-lg  ${
-                      modalPriorityInput === "High"
-                        ? "bg-orange-100 text-primary border-primary"
-                        : ""
-                    }`}
-                    onClick={() => {
-                      setModalPriorityInput("High");
-                    }}
-                  >
-                    High
-                  </button>
+              <form className="space-y-4" onSubmit={handleAddOneDirectly}>
+                <div className="space-y-2">
+                  <label className="block">Plan Creation Date</label>
+                  <input
+                    type="date"
+                    value={new Date().toISOString().split("T")[0]}
+                    className="border border-gray-300 rounded p-2 w-full"
+                    readOnly
+                  />
                 </div>
-                <label>Destination</label>
-                <input
-                  type="text"
-                  required
-                  value={destination}
-                  onChange={(event) => {
-                    const value = event.target.value;
-                    setDestination(value); // Update destination state directly
-                    fetchPredictions(value); // Fetch predictions based on input
-                  }}
-                  className={`border mt-2 border-gray-300 rounded p-2 w-full mb-1 ${
-                    isFormSubmitted && !destination ? "border-red-500" : ""
-                  }`} // Highlight if empty on submit
-                  placeholder="Enter your destination"
-                />
-                {predictions.length > 0 && (
-                  <ul className="border border-gray-300 rounded mt-2 max-h-40 overflow-y-auto">
-                    {predictions.map((prediction) => (
-                      <li
-                        key={prediction.place_id}
-                        className="p-2 hover:bg-gray-100 cursor-pointer"
-                        onClick={() => {
-                          setDestination(prediction.description);
-                          setPredictions([]);
-                        }}
-                      >
-                        {prediction.description}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-                <div className="flex justify-end mt-4">
+
+                <div className="space-y-2">
+                  <label className="block">Deadline</label>
+                  <DatePicker
+                    onChange={(date, dateString) =>
+                      setDeadlineInput(dateString)
+                    }
+                    className={`border border-gray-300 rounded p-2 w-full ${
+                      isFormSubmitted && !deadlineInput ? "border-red-500" : ""
+                    }`}
+                    placeholder="Select your deadline"
+                    required
+                    disabledDate={(current) =>
+                      current && current < moment().startOf("day")
+                    }
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block">Demand</label>
+                  <input
+                    type="text"
+                    required
+                    value={demandInput}
+                    onChange={(e) => setDemandInput(e.target.value)}
+                    className={`border border-gray-300 rounded p-2 w-full ${
+                      isFormSubmitted && !demandInput ? "border-red-500" : ""
+                    }`}
+                    placeholder="Enter your demand"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block">Plan Priority</label>
+                  <div
+                    className="mt-2 mb-4 rounded-md shadow-sm w-full flex"
+                    role="group"
+                  >
+                    <button
+                      type="button"
+                      className={`flex-1 px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-s-lg ${
+                        modalPriorityInput === "Low"
+                          ? "bg-orange-100 text-primary border-primary"
+                          : ""
+                      }`}
+                      onClick={() => {
+                        setModalPriorityInput("Low");
+                      }}
+                    >
+                      Low
+                    </button>
+                    <button
+                      type="button"
+                      className={`flex-1 px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-e-lg  ${
+                        modalPriorityInput === "High"
+                          ? "bg-orange-100 text-primary border-primary"
+                          : ""
+                      }`}
+                      onClick={() => {
+                        setModalPriorityInput("High");
+                      }}
+                    >
+                      High
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block">Destination</label>
+                  <input
+                    type="text"
+                    required
+                    value={destination}
+                    onChange={(event) => {
+                      const value = event.target.value;
+                      setDestination(value); // Update destination state directly
+                      fetchPredictions(value); // Fetch predictions based on input
+                    }}
+                    className={`border border-gray-300 rounded p-2 w-full ${
+                      isFormSubmitted && !destination ? "border-red-500" : ""
+                    }`} // Highlight if empty on submit
+                    placeholder="Enter your destination"
+                  />
+                  {predictions.length > 0 && (
+                    <ul className="border border-gray-300 rounded mt-2 max-h-40 overflow-y-auto">
+                      {predictions.map((prediction) => (
+                        <li
+                          key={prediction.place_id}
+                          className="p-2 hover:bg-gray-100 cursor-pointer"
+                          onClick={() => {
+                            setDestination(prediction.description);
+                            setPredictions([]);
+                          }}
+                        >
+                          {prediction.description}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+
+                <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6">
                   <button
                     type="button"
                     onClick={() => {
@@ -1334,15 +1377,16 @@ const Planner = () => {
                       resetFormFields(); // Reset form fields when closing modal
                       setIsFormSubmitted(false); // Reset form submitted state
                     }}
-                    className="mr-4 w-16 font-medium text-gray-400 border border-gray-300 px-4 py-2 rounded-lg flex justify-center items-center"
+                    className="w-full sm:w-24 font-medium text-gray-400 border border-gray-300 px-4 py-2 rounded-lg"
                   >
                     Close
                   </button>
                   <button
                     type="submit"
-                    className={`bg-primary/50 w-32 font-medium text-white px-4 py-2 rounded-lg 
-                      flex justify-center items-center hover:bg-primary
-                      ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                    className={`w-full sm:w-32 bg-primary/50 font-medium text-white px-4 py-2 rounded-lg 
+                      hover:bg-primary ${
+                        isLoading ? "opacity-50 cursor-not-allowed" : ""
+                      }`}
                     disabled={isLoading}
                   >
                     {isLoading ? "Adding..." : "Add"}
@@ -1398,106 +1442,120 @@ const Planner = () => {
       )}
 
       {isEditModalVisible && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-          <div className="bg-white p-8 rounded shadow-lg relative w-1/4">
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 p-4">
+          <div className="bg-white rounded-lg shadow-lg relative w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <button
-              className="absolute top-2 right-2 text-gray-400 text-xl"
+              className="absolute top-4 right-4 text-gray-400 text-xl"
               onClick={() => setIsEditModalVisible(false)}
             >
               <IoMdClose />
             </button>
-            <h2 className="text-xl text-center font-bold mb-10">
-              Edit Selected Plans
-            </h2>
-            <div className="mb-4">
-              <h3 className="font-semibold inline">Editing Plans:</h3>
-              <span className="ml-2">
-                {editData.map((plan, index) => (
-                  <span key={plan.key}>
-                    {plan.id}
-                    {index < editData.length - 1 ? ", " : ""}{" "}
-                  </span>
-                ))}
-              </span>
-            </div>
-            <form>
-              {singleEditPlan && (
-                <div className="mb-4">
-                  <label>Deadline</label>
-                  <DatePicker
-                    defaultValue={
-                      singleEditPlan.deadline
-                        ? dayjs(singleEditPlan.deadline, "YYYY-MM-DD")
-                        : null
-                    }
-                    onChange={(date) => {
-                      setSingleEditPlan((prev) => ({
-                        ...prev,
-                        deadline: date ? date.format("YYYY-MM-DD") : null,
-                      }));
-                    }}
-                    className="border mt-2 border-gray-300 rounded p-2 w-full mb-2"
-                  />
 
-                  <label>Priority</label>
-                  <select
-                    value={singleEditPlan.priority}
-                    onChange={(e) => {
-                      setSingleEditPlan((prev) => ({
-                        ...prev,
-                        priority: e.target.value,
-                      }));
-                    }}
-                    className="border mt-2 border-gray-300 rounded p-2 w-full mb-2"
-                  >
-                    <option value="High">High</option>
-                    <option value="Low">Low</option>
-                  </select>
+            <div className="p-6">
+              <h2 className="text-xl text-center font-bold mb-6">
+                Edit Selected Plans
+              </h2>
 
-                  <label>Demand</label>
-                  <input
-                    type="number"
-                    value={singleEditPlan.demand}
-                    onChange={(e) => {
-                      setSingleEditPlan((prev) => ({
-                        ...prev,
-                        demand: e.target.value,
-                      }));
-                    }}
-                    className="border mt-2 border-gray-300 rounded p-2 w-full mb-2"
-                  />
-
-                  <label>Destination</label>
-                  <input
-                    type="text"
-                    value={singleEditPlan.destination}
-                    onChange={(e) => {
-                      setSingleEditPlan((prev) => ({
-                        ...prev,
-                        destination: e.target.value,
-                      }));
-                    }}
-                    className="border mt-2 border-gray-300 rounded p-2 w-full mb-2"
-                  />
+              <div className="mb-6">
+                <h3 className="font-semibold">Editing Plans:</h3>
+                <div className="mt-2 text-sm text-gray-600 break-words">
+                  {editData.map((plan, index) => (
+                    <span key={plan.key}>
+                      {plan.id}
+                      {index < editData.length - 1 ? ", " : ""}
+                    </span>
+                  ))}
                 </div>
-              )}
-              <div className="flex justify-end mt-4">
-                <button
-                  type="button"
-                  onClick={() => setIsEditModalVisible(false)}
-                  className="mr-4 w-16 font-medium text-gray-400 border border-gray-300 px-4 py-2 rounded-lg flex justify-center items-center"
-                >
-                  Close
-                </button>
-                <button
-                  type="submit"
-                  className="bg-primary/50 w-32 font-medium text-white px-4 py-2 rounded-lg flex justify-center items-center hover:bg-primary"
-                  onClick={handleUpdatePlans}
-                >
-                  Save
-                </button>
               </div>
-            </form>
+
+              <form className="space-y-4">
+                {singleEditPlan && (
+                  <>
+                    <div className="space-y-2">
+                      <label className="block">Deadline</label>
+                      <DatePicker
+                        defaultValue={
+                          singleEditPlan.deadline
+                            ? dayjs(singleEditPlan.deadline, "YYYY-MM-DD")
+                            : null
+                        }
+                        onChange={(date) => {
+                          setSingleEditPlan((prev) => ({
+                            ...prev,
+                            deadline: date ? date.format("YYYY-MM-DD") : null,
+                          }));
+                        }}
+                        className="border border-gray-300 rounded p-2 w-full"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="block">Priority</label>
+                      <select
+                        value={singleEditPlan.priority}
+                        onChange={(e) => {
+                          setSingleEditPlan((prev) => ({
+                            ...prev,
+                            priority: e.target.value,
+                          }));
+                        }}
+                        className="border border-gray-300 rounded p-2 w-full"
+                      >
+                        <option value="High">High</option>
+                        <option value="Low">Low</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="block">Demand</label>
+                      <input
+                        type="number"
+                        value={singleEditPlan.demand}
+                        onChange={(e) => {
+                          setSingleEditPlan((prev) => ({
+                            ...prev,
+                            demand: e.target.value,
+                          }));
+                        }}
+                        className="border border-gray-300 rounded p-2 w-full"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="block">Destination</label>
+                      <input
+                        type="text"
+                        value={singleEditPlan.destination}
+                        onChange={(e) => {
+                          setSingleEditPlan((prev) => ({
+                            ...prev,
+                            destination: e.target.value,
+                          }));
+                        }}
+                        className="border border-gray-300 rounded p-2 w-full"
+                      />
+                    </div>
+                  </>
+                )}
+
+                <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6">
+                  <button
+                    type="button"
+                    onClick={() => setIsEditModalVisible(false)}
+                    className="w-full sm:w-24 font-medium text-gray-400 border border-gray-300 px-4 py-2 rounded-lg"
+                  >
+                    Close
+                  </button>
+                  <button
+                    type="submit"
+                    className="w-full sm:w-32 bg-primary/50 font-medium text-white px-4 py-2 rounded-lg hover:bg-primary"
+                    onClick={handleUpdatePlans}
+                  >
+                    Save
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}

@@ -1,34 +1,16 @@
-import { Link } from "react-router-dom";
 const NotFoundPage = () => {
   return (
     <>
       <div className="min-w-screen min-h-screen bg-blue-100 flex items-center p-5 lg:p-20 overflow-hidden relative">
         <div className="flex-1 min-h-full min-w-full rounded-3xl bg-white shadow-xl p-10 lg:p-20 text-gray-800 relative md:flex items-center text-center md:text-left">
           <div className="w-full md:w-1/2">
-            <div className="mb-10 lg:mb-20">
-              <h1 className="items-center flex justify-center">EffieRoute</h1>
-              <svg
-                id="logoipsum"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="15 30 147.778 40"
-                className="w-48"
-              >
-                <circle cx="154.512" cy="43.944" r="2.204" fill="#0582C1" />
-              </svg>
-            </div>
             <div className="mb-10 md:mb-20 text-gray-600 font-light">
               <h1 className="font-black uppercase text-3xl lg:text-5xl text-yellow-500 mb-10">
                 You seem to be lost!
               </h1>
-              <p>The page you&apos;re looking for isn&apos;t available.</p>
-              <p>Try searching again or use the Go Back button below.</p>
-            </div>
-            <div className="mb-20 md:mb-0">
-              <Link to="/">
-                <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full transform transition-all hover:scale-110">
-                  GO BACK TO HOME PAGE
-                </button>
-              </Link>
+              <p className="text-2xl">
+                The page you&apos;re looking for isn&apos;t available.
+              </p>
             </div>
           </div>
           <div className="w-full md:w-1/2 text-center">
