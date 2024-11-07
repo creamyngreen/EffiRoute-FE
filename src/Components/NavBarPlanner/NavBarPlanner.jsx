@@ -76,7 +76,7 @@ function NavBarPlanner() {
                     </span>
                     <div className="flex space-x-2 mt-3">
                       <div className="border border-primary rounded px-2 py-0.5 text-xs text-primary">
-                        {user.roleWithPermission?.name}
+                        {user.roleWithPermission?.description}
                       </div>
                       <div className="border border-gray-300 rounded px-2 py-0.5 text-xs text-gray-500">
                         Free
