@@ -644,6 +644,39 @@ const Planner = () => {
     }
   };
 
+
+  const downloadCSV = () => {
+    if (selectedRowKeys.length === 0) {
+      notification.warning({
+        message: "No Plans Selected",
+        description: "Please select at least one plan to download.",
+        placement: "topRight",
+      });
+      return;
+    }
+
+    const selectedPlans = tableData.filter((plan) =>
+      selectedRowKeys.includes(plan.key)
+    );
+
+    const csvData = selectedPlans.map((plan) => ({
+      ID: plan.id,
+      "Created Date": plan.createdDate,
+      Deadline: plan.deadline,
+      Demand: plan.demand,
+      Destination: plan.destination,
+      Priority: plan.priority,
+      Status: plan.status,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(csvData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Selected Plans");
+
+    const csvBuffer = XLSX.write(workbook, { bookType: "csv", type: "array" });
+    const blob = new Blob([csvBuffer], { type: "text/csv;charset=utf-8;" });
+    saveAs(blob, "selected_plans.csv");
+
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     setCurrentPage(1);
@@ -659,6 +692,7 @@ const Planner = () => {
     const filters = tab === "all" ? {} : { status: tab };
     setCurrentFilters(filters); // Update current filters
     dispatch(fetchPlans(1, pageSize, filters));
+
   };
 
   return (
@@ -677,7 +711,10 @@ const Planner = () => {
           </div>
 
           <div className="flex space-x-4">
-            <button className="border border-gray-300 text-sm font-bold text-[#8F96A9] px-4 py-2 rounded-md hover:bg-gray-100 flex items-center">
+            <button
+              className="border border-gray-300 text-sm font-bold text-[#8F96A9] px-4 py-2 rounded-md hover:bg-gray-100 flex items-center"
+              onClick={downloadCSV}
+            >
               <FaArrowDown className="mr-2 text-xs" /> Download CSV
             </button>
             <button
