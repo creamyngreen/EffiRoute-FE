@@ -29,7 +29,7 @@ export const doAddPlan = (planData) => {
         initialDate: new Date().toLocaleDateString("en-US"),
         status: "draft",
         destination: planData.destination,
-        priority: planData.priority === "High" ? 1 : 0,
+        priority: planData.priority,
         demand: parseFloat(planData.demand),
       };
 
@@ -65,8 +65,7 @@ export const fetchPlans = (page = 1, limit = 10, filters = {}) => {
       const payload = {
         filters: {
           status: filters.status || null,
-          priority:
-            typeof filters.priority === "number" ? filters.priority : null,
+          priority: filters.priority !== null ? Number(filters.priority) : null,
           initialFrom: filters.initialFrom || null,
           initialTo: filters.initialTo || null,
           deadlineFrom: filters.deadlineFrom || null,
@@ -93,8 +92,8 @@ export const fetchPlans = (page = 1, limit = 10, filters = {}) => {
           type: FETCH_PLANS_SUCCESS,
           payload: {
             data: transformedData.procurementPlans,
-            total: transformedData.totalRows || 0,
-            totalPages: transformedData.totalPages || 1,
+            total: transformedData.totalRows,
+            totalPages: transformedData.totalPages,
             page: page,
             limit: limit,
           },
@@ -102,17 +101,28 @@ export const fetchPlans = (page = 1, limit = 10, filters = {}) => {
         return transformedData;
       } else {
         dispatch({
-          type: FETCH_PLANS_FAILURE,
-          payload: response.EM,
+          type: FETCH_PLANS_SUCCESS,
+          payload: {
+            data: [],
+            total: 0,
+            totalPages: 1,
+            page: 1,
+            limit: limit,
+          },
         });
-        throw new Error(response.EM);
       }
     } catch (error) {
+      console.error("Fetch plans error:", error);
       dispatch({
-        type: FETCH_PLANS_FAILURE,
-        payload: error.message,
+        type: FETCH_PLANS_SUCCESS,
+        payload: {
+          data: [],
+          total: 0,
+          totalPages: 1,
+          page: 1,
+          limit: limit,
+        },
       });
-      throw error;
     }
   };
 };

@@ -121,8 +121,8 @@ const columns = [
   },
 ];
 
-const CustomEmpty = ({ onReset }) => (
-  <div className="flex flex-col items-center justify-center py-8">
+const CustomEmpty = () => (
+  <div className="flex flex-col items -center justify-center py-8">
     <Empty
       image={Empty.PRESENTED_IMAGE_SIMPLE}
       description={
@@ -136,15 +136,6 @@ const CustomEmpty = ({ onReset }) => (
         </div>
       }
     />
-    <button
-      onClick={() => {
-        // Reset all filters
-        onReset();
-      }}
-      className="mt-4 text-primary hover:text-primary/80 text-sm font-medium"
-    >
-      Reset Filters
-    </button>
   </div>
 );
 
@@ -170,7 +161,6 @@ const Planner = () => {
   const [modalPriorityInput, setModalPriorityInput] = useState(null);
   const [deadlineInput, setDeadlineInput] = useState("");
   const [isFormSubmitted, setIsFormSubmitted] = useState(false);
-  const [activeButton, setActiveButton] = useState(null);
   const [activeTimeFrame, setActiveTimeFrame] = useState(null);
   const [activeStatus, setActiveStatus] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -179,17 +169,25 @@ const Planner = () => {
   const [dateType, setDateType] = useState("createdDate");
   const [pageSize, setPageSize] = useState(10);
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState("all");
   const dispatch = useDispatch();
   const { plans, isLoading } = useSelector((state) => state.planner);
   const user = useSelector((state) => state.account.userInfo);
+  const [currentFilters, setCurrentFilters] = useState({});
 
   // Transform data for table display
   const tableData = useMemo(() => {
-    if (!plans?.data || plans?.data.length === 0) {
+    if (!plans?.data || !Array.isArray(plans.data)) {
       return [];
     }
 
-    return plans.data.map((plan) => ({
+    // Filter data based on activeTab if not on "all" tab
+    const filteredData =
+      activeTab === "all"
+        ? plans.data
+        : plans.data.filter((plan) => plan.status.toLowerCase() === activeTab);
+
+    return filteredData.map((plan) => ({
       key: plan.id,
       id: plan.id,
       createdDate: moment(plan.createdAt).format("YYYY-MM-DD"),
@@ -202,12 +200,11 @@ const Planner = () => {
           : "Low",
       status: plan.status,
     }));
-  }, [plans.data]);
+  }, [plans?.data, activeTab]);
 
-  // Add useEffect to fetch plans when component mounts
   useEffect(() => {
-    dispatch(fetchPlans(currentPage, pageSize));
-  }, [dispatch, currentPage, pageSize]);
+    dispatch(fetchPlans(currentPage, pageSize, currentFilters));
+  }, [dispatch, currentPage, pageSize, currentFilters]);
 
   const onSelectChange = (newSelectedRowKeys) => {
     console.log("selectedRowKeys changed: ", newSelectedRowKeys);
@@ -236,8 +233,8 @@ const Planner = () => {
   const handleRowsChange = (event) => {
     const newPageSize = parseInt(event.target.value, 10);
     setPageSize(newPageSize);
-    setCurrentPage(1); // Reset to first page when changing page size
-    dispatch(fetchPlans(1, newPageSize));
+    setCurrentPage(1);
+    dispatch(fetchPlans(1, newPageSize, currentFilters));
   };
 
   const toggleDetailedFilter = () => {
@@ -279,6 +276,8 @@ const Planner = () => {
     }
 
     try {
+      console.log("Selected priority:", modalPriorityInput);
+
       const planData = {
         plannerId: user.user_id,
         managerId: "3",
@@ -287,6 +286,8 @@ const Planner = () => {
         priority: modalPriorityInput === "High" ? 1 : 0,
         demand: demandInput,
       };
+
+      console.log("Plan data being sent:", planData);
 
       // Call API through Redux action
       await dispatch(doAddPlan(planData));
@@ -404,10 +405,6 @@ const Planner = () => {
     setIsFormSubmitted(false);
   };
 
-  const handleButtonClick = (buttonName) => {
-    setActiveButton(buttonName);
-  };
-
   // Handle date type change
   const handleDateTypeChange = (type) => {
     setDateType(type);
@@ -447,8 +444,9 @@ const Planner = () => {
   // Handle apply filter
   const handleApplyFilter = async () => {
     try {
+      setCurrentPage(1);
       const filters = {
-        status: activeStatus || null,
+        status: activeTab === "all" ? activeStatus : activeTab,
         priority:
           priorityInput === "High" ? 1 : priorityInput === "Low" ? 0 : null,
         initialFrom:
@@ -465,33 +463,30 @@ const Planner = () => {
           dateType === "deadline" ? dateRange[1]?.format("YYYY-MM-DD") : null,
       };
 
-      await dispatch(fetchPlans(currentPage, pageSize, filters));
-    } catch (error) {
-      notification.error({
-        message: "Error",
-        description: error.message || "Failed to apply filters",
-        placement: "topRight",
-      });
-    }
-  };
+      // Remove null values
+      Object.keys(filters).forEach(
+        (key) =>
+          (filters[key] === null || filters[key] === undefined) &&
+          delete filters[key]
+      );
 
-  // Add a reset filters function
-  const handleResetFilters = () => {
-    setActiveStatus(null);
-    setPriorityInput(null);
-    setDateRange([null, null]);
-    setActiveTimeFrame(null);
-    setDateType("createdDate");
-    dispatch(fetchPlans(1, pageSize));
+      // Save current filters
+      setCurrentFilters(filters);
+
+      await dispatch(fetchPlans(1, pageSize, filters));
+      setSelectedRowKeys([]);
+    } catch (error) {
+      console.error("Filter error:", error);
+    }
   };
 
   const handleSearch = (e) => {
     const value = e.target.value;
     setSearchQuery(value);
+    setCurrentPage(1);
 
-    // If search is empty, reset to normal fetch
     if (!value.trim()) {
-      dispatch(fetchPlans(currentPage, pageSize));
+      dispatch(fetchPlans(1, pageSize));
       return;
     }
 
@@ -502,7 +497,6 @@ const Planner = () => {
     return () => clearTimeout(timeoutId);
   };
 
-  // Add handleUpdatePlans function near your other handlers
   const handleUpdatePlans = async (e) => {
     e.preventDefault();
 
@@ -604,7 +598,8 @@ const Planner = () => {
               );
             }
           }
-          const priority = row[3]?.toString().trim();
+          const priorityString = row[3]?.toString().trim().toLowerCase();
+          const priority = priorityString === "high" ? 1 : 0;
 
           return {
             plannerId: user.user_id,
@@ -649,6 +644,7 @@ const Planner = () => {
     }
   };
 
+
   const downloadCSV = () => {
     if (selectedRowKeys.length === 0) {
       notification.warning({
@@ -680,6 +676,23 @@ const Planner = () => {
     const csvBuffer = XLSX.write(workbook, { bookType: "csv", type: "array" });
     const blob = new Blob([csvBuffer], { type: "text/csv;charset=utf-8;" });
     saveAs(blob, "selected_plans.csv");
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setCurrentPage(1);
+    setSelectedRowKeys([]); // Clear selected rows when changing tabs
+
+    // Reset filters
+    setPriorityInput(null);
+    setDateRange([null, null]);
+    setActiveTimeFrame(null);
+    setDateType("createdDate");
+    setActiveStatus(null);
+
+    const filters = tab === "all" ? {} : { status: tab };
+    setCurrentFilters(filters); // Update current filters
+    dispatch(fetchPlans(1, pageSize, filters));
+
   };
 
   return (
@@ -722,55 +735,55 @@ const Planner = () => {
         <div className="inline-flex rounded-md shadow-sm mb-4" role="group">
           <button
             type="button"
-            className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-s-lg  ${
-              activeButton === "view" ? "bg-gray-100 text-primary" : ""
+            className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 ${
+              activeTab === "all" ? "bg-gray-100 text-primary" : ""
             }`}
-            onClick={() => handleButtonClick("view")}
+            onClick={() => handleTabChange("all")}
           >
             View Entire Plans
           </button>
           <button
             type="button"
-            className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200   ${
-              activeButton === "draft" ? "bg-gray-100 text-primary" : ""
+            className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 ${
+              activeTab === "draft" ? "bg-gray-100 text-primary" : ""
             }`}
-            onClick={() => handleButtonClick("draft")}
+            onClick={() => handleTabChange("draft")}
           >
             View Draft Plans
           </button>
           <button
             type="button"
             className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 ${
-              activeButton === "pending" ? "bg-gray-100 text-primary" : ""
+              activeTab === "pending" ? "bg-gray-100 text-primary" : ""
             }`}
-            onClick={() => handleButtonClick("pending")}
+            onClick={() => handleTabChange("pending")}
           >
             Manage Pending Plans
           </button>
           <button
             type="button"
-            className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200   ${
-              activeButton === "approved" ? "bg-gray-100 text-primary" : ""
+            className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 ${
+              activeTab === "approved" ? "bg-gray-100 text-primary" : ""
             }`}
-            onClick={() => handleButtonClick("approved")}
+            onClick={() => handleTabChange("approved")}
           >
             Manage Approved Plans
           </button>
           <button
             type="button"
-            className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200   ${
-              activeButton === "completed" ? "bg-gray-100 text-primary" : ""
+            className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 ${
+              activeTab === "completed" ? "bg-gray-100 text-primary" : ""
             }`}
-            onClick={() => handleButtonClick("completed")}
+            onClick={() => handleTabChange("completed")}
           >
             Manage Completed Plans
           </button>
           <button
             type="button"
-            className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-e-lg  ${
-              activeButton === "rejected" ? "bg-gray-100 text-primary" : ""
+            className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-e-lg ${
+              activeTab === "rejected" ? "bg-gray-100 text-primary" : ""
             }`}
-            onClick={() => handleButtonClick("rejected")}
+            onClick={() => handleTabChange("rejected")}
           >
             Manage Rejected Plans
           </button>
@@ -910,97 +923,101 @@ const Planner = () => {
               </Space>
             </div>
 
-            {/* Plan Status */}
-            <div className="mt-4 flex space-x-8">
-              <div className="flex items-center space-x-2">
-                <label className="text-gray-600 flex items-center">
-                  Plan Status
-                  <div className="relative group ml-2">
-                    <div className="w-4 h-4 bg-gray-400 text-white rounded-full flex items-center justify-center cursor-pointer">
-                      i
+            {/* Only show Plan Status filter when on "View Entire Plans" tab */}
+            {activeTab === "all" && (
+              <div className="mt-4 flex space-x-8">
+                <div className="flex items-center space-x-2">
+                  <label className="text-gray-600 flex items-center">
+                    Plan Status
+                    <div className="relative group ml-2">
+                      <div className="w-4 h-4 bg-gray-400 text-white rounded-full flex items-center justify-center cursor-pointer">
+                        i
+                      </div>
+                      <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full mt-2 hidden group-hover:block bg-white text-primary text-xs rounded py-1 px-2 w-40 border border-gray-300">
+                        This is a plan status filter
+                      </div>
                     </div>
-                    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full mt-2 hidden group-hover:block bg-white text-primary text-xs rounded py-1 px-2 w-40 border border-gray-300">
-                      This is a plan status filter
-                    </div>
-                  </div>
-                </label>
+                  </label>
+                </div>
+                <div className="inline-flex rounded-md shadow-sm " role="group">
+                  <button
+                    type="button"
+                    className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-s-lg ${
+                      activeStatus === "draft"
+                        ? "bg-orange-100 text-primary border-primary"
+                        : ""
+                    }`}
+                    onClick={() => {
+                      setActiveStatus(
+                        activeStatus === "draft" ? null : "draft"
+                      );
+                    }}
+                  >
+                    Draft
+                  </button>
+                  <button
+                    type="button"
+                    className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 ${
+                      activeStatus === "pending"
+                        ? "bg-orange-100 text-primary border-primary"
+                        : ""
+                    }`}
+                    onClick={() => {
+                      setActiveStatus(
+                        activeStatus === "pending" ? null : "pending"
+                      );
+                    }}
+                  >
+                    Pending
+                  </button>
+                  <button
+                    type="button"
+                    className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 ${
+                      activeStatus === "approved"
+                        ? "bg-orange-100 text-primary border-primary"
+                        : ""
+                    }`}
+                    onClick={() => {
+                      setActiveStatus(
+                        activeStatus === "approved" ? null : "approved"
+                      );
+                    }}
+                  >
+                    Approved
+                  </button>
+                  <button
+                    type="button"
+                    className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 ${
+                      activeStatus === "rejected"
+                        ? "bg-orange-100 text-primary border-primary"
+                        : ""
+                    }`}
+                    onClick={() => {
+                      setActiveStatus(
+                        activeStatus === "rejected" ? null : "rejected"
+                      );
+                    }}
+                  >
+                    Rejected
+                  </button>
+                  <button
+                    type="button"
+                    className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-e-lg ${
+                      activeStatus === "completed"
+                        ? "bg-orange-100 text-primary border-primary"
+                        : ""
+                    }`}
+                    onClick={() => {
+                      setActiveStatus(
+                        activeStatus === "completed" ? null : "completed"
+                      );
+                    }}
+                  >
+                    Completed
+                  </button>
+                </div>
               </div>
-              <div className="inline-flex rounded-md shadow-sm " role="group">
-                <button
-                  type="button"
-                  className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-s-lg ${
-                    activeStatus === "draft"
-                      ? "bg-orange-100 text-primary border-primary"
-                      : ""
-                  }`}
-                  onClick={() => {
-                    setActiveStatus(activeStatus === "draft" ? null : "draft");
-                  }}
-                >
-                  Draft
-                </button>
-                <button
-                  type="button"
-                  className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 ${
-                    activeStatus === "pending"
-                      ? "bg-orange-100 text-primary border-primary"
-                      : ""
-                  }`}
-                  onClick={() => {
-                    setActiveStatus(
-                      activeStatus === "pending" ? null : "pending"
-                    );
-                  }}
-                >
-                  Pending
-                </button>
-                <button
-                  type="button"
-                  className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 ${
-                    activeStatus === "approved"
-                      ? "bg-orange-100 text-primary border-primary"
-                      : ""
-                  }`}
-                  onClick={() => {
-                    setActiveStatus(
-                      activeStatus === "approved" ? null : "approved"
-                    );
-                  }}
-                >
-                  Approved
-                </button>
-                <button
-                  type="button"
-                  className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 ${
-                    activeStatus === "rejected"
-                      ? "bg-orange-100 text-primary border-primary"
-                      : ""
-                  }`}
-                  onClick={() => {
-                    setActiveStatus(
-                      activeStatus === "rejected" ? null : "rejected"
-                    );
-                  }}
-                >
-                  Rejected
-                </button>
-                <button
-                  type="button"
-                  className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-e-lg ${
-                    activeStatus === "completed"
-                      ? "bg-orange-100 text-primary border-primary"
-                      : ""
-                  }`}
-                  onClick={() => {
-                    setActiveStatus(
-                      activeStatus === "completed" ? null : "completed"
-                    );
-                  }}
-                >
-                  Completed
-                </button>
-              </div>
-            </div>
+            )}
             {/* Plan Priority */}
             <div className="mt-4 flex space-x-8">
               <div className="flex items-center space-x-2">
@@ -1095,16 +1112,20 @@ const Planner = () => {
           dataSource={tableData}
           loading={isLoading}
           locale={{
-            emptyText: <CustomEmpty onReset={handleResetFilters} />,
+            emptyText: <CustomEmpty />,
           }}
           pagination={{
             current: currentPage,
             pageSize: pageSize,
-            total: plans.total || 0,
-            onChange: (page, pageSize) => {
+            total: plans?.total || 0,
+            showSizeChanger: true,
+            showTotal: (total, range) =>
+              `${range[0]}-${range[1]} of ${total} items`,
+            onChange: (page, size) => {
               setCurrentPage(page);
-              setPageSize(pageSize);
-              dispatch(fetchPlans(page, pageSize));
+              setPageSize(size);
+              // Use the saved filters
+              dispatch(fetchPlans(page, size, currentFilters));
             },
           }}
           components={{
@@ -1220,18 +1241,22 @@ const Planner = () => {
                         ? "bg-orange-100 text-primary border-primary"
                         : ""
                     }`}
-                    onClick={() => setModalPriorityInput("Low")}
+                    onClick={() => {
+                      setModalPriorityInput("Low");
+                    }}
                   >
                     Low
                   </button>
                   <button
                     type="button"
-                    className={`flex-1 px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-e-lg ${
+                    className={`flex-1 px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-e-lg  ${
                       modalPriorityInput === "High"
                         ? "bg-orange-100 text-primary border-primary"
                         : ""
                     }`}
-                    onClick={() => setModalPriorityInput("High")}
+                    onClick={() => {
+                      setModalPriorityInput("High");
+                    }}
                   >
                     High
                   </button>
