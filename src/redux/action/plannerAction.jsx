@@ -1,6 +1,5 @@
 import axios from "../../setup/axios";
 import moment from "moment";
-
 // Define action types as constants
 export const ADD_PLAN_REQUEST = "ADD_PLAN_REQUEST";
 export const ADD_PLAN_SUCCESS = "ADD_PLAN_SUCCESS";
@@ -114,7 +113,7 @@ export const fetchPlans = (page = 1, limit = 10, filters = {}) => {
     } catch (error) {
       console.error("Fetch plans error:", error);
       dispatch({
-        type: FETCH_PLANS_SUCCESS,
+        type: FETCH_PLANS_FAILURE,
         payload: {
           data: [],
           total: 0,

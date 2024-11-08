@@ -1,7 +1,9 @@
-/* eslint-disable no-unused-vars */
 import axios from "../../setup/axios";
 import Modal from "../../Components/Modal/Modal";
 import { createRoot } from "react-dom/client";
+import { PURGE } from "redux-persist";
+import { CLEAR_OPTIMIZE_STATE } from "../reducer/optimizeReducer";
+
 export const LOGIN_REQUEST = "LOGIN_REQUEST";
 export const LOGIN_SUCCESS = "LOGIN_SUCCESS";
 export const LOGIN_FAILURE = "LOGIN_FAILURE";
@@ -31,40 +33,52 @@ const showSessionExpiredModal = () => {
 };
 
 export const doLogin = (ssoToken) => {
-  return async (dispatch, getState) => {
+  return async (dispatch) => {
     dispatch({ type: LOGIN_REQUEST });
-    axios
-      .post(import.meta.env.VITE_BACKEND_VERIFY_TOKEN, { ssoToken })
-      .then((res) => {
-        if (res && +res.EC === 1) {
-          dispatch({ type: LOGIN_SUCCESS, user: res.DT });
-        } else {
-          dispatch({ type: LOGIN_FAILURE, error: res.EM });
-        }
-      })
-      .catch((err) => {
-        dispatch({ type: LOGIN_FAILURE, error: err.message });
-        console.log(err);
+    try {
+      const res = await axios.post(import.meta.env.VITE_BACKEND_VERIFY_TOKEN, {
+        ssoToken,
       });
+      if (res && +res.EC === 1) {
+        dispatch({ type: LOGIN_SUCCESS, user: res.DT });
+      } else {
+        dispatch({ type: LOGIN_FAILURE, error: res.EM });
+      }
+    } catch (err) {
+      dispatch({ type: LOGIN_FAILURE, error: err.message });
+      console.log(err);
+    }
   };
 };
 
 export const doLogout = () => {
-  return async (dispatch, getState) => {
+  return async (dispatch) => {
     dispatch({ type: LOGOUT_REQUEST });
-    axios
-      .post("/logout")
-      .then((res) => {
-        if (res && +res.EC === 1) {
-          dispatch({ type: LOGOUT_SUCCESS, user: res.DT });
-        } else {
-          dispatch({ type: LOGOUT_FAILURE, error: res.EM });
-        }
-      })
-      .catch((err) => {
-        dispatch({ type: LOGOUT_FAILURE, error: err.message });
-        console.log(err);
-      });
+    try {
+      const res = await axios.post("/logout");
+      if (res && +res.EC === 1) {
+        // Clear optimize state
+        dispatch({ type: CLEAR_OPTIMIZE_STATE });
+
+        // Clear persisted states
+        dispatch({
+          type: PURGE,
+          key: "root",
+          result: () => null,
+        });
+
+        // Logout success
+        dispatch({ type: LOGOUT_SUCCESS });
+
+        // Clear user data
+        dispatch({ type: LOGIN_FAILURE, error: null });
+      } else {
+        dispatch({ type: LOGOUT_FAILURE, error: res.EM });
+      }
+    } catch (err) {
+      dispatch({ type: LOGOUT_FAILURE, error: err.message });
+      console.log(err);
+    }
   };
 };
 
@@ -76,6 +90,16 @@ export const doGetAccount = () => {
       if (res && +res.EC === 1) {
         dispatch({ type: LOGIN_SUCCESS, user: res.DT });
       } else {
+        // Clear optimize state
+        dispatch({ type: CLEAR_OPTIMIZE_STATE });
+
+        // Clear persisted states
+        dispatch({
+          type: PURGE,
+          key: "root",
+          result: () => null,
+        });
+
         dispatch({ type: LOGIN_FAILURE, error: res.EM });
 
         if (window.location.pathname !== "/") {

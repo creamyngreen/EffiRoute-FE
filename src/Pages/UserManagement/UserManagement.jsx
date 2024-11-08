@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import NavBarManager from "../../Components/NavBarManager/NavBarManager";
+import { useState } from "react";
 import { FaUser } from "react-icons/fa";
 import { IoIosBusiness } from "react-icons/io";
 
@@ -47,7 +46,6 @@ const UserManagement = () => {
 
   return (
     <>
-      <NavBarManager />
       <div className="flex">
         <aside className="w-[20rem] h-screen border p-4 border-r">
           <h3 className="text-lg font-semibold text-gray-400 mb-4">

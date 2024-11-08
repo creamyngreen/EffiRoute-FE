@@ -1,19 +1,17 @@
 /* eslint-disable react/prop-types */
 import { useState, useEffect, useMemo } from "react";
-import NavBarPlanner from "../../Components/NavBarPlanner/NavBarPlanner";
 import { FaPlus } from "react-icons/fa6";
 import { FaArrowDown } from "react-icons/fa";
 import { CiSearch } from "react-icons/ci";
 import { TiFilter } from "react-icons/ti";
 import { IoMdArrowDropdown } from "react-icons/io";
-import { DatePicker, Space, Table, notification, Empty } from "antd";
+import { DatePicker, Space, Table, notification, Empty, Progress } from "antd";
 import { RiExpandUpDownFill } from "react-icons/ri";
 import { RiDeleteBack2Line } from "react-icons/ri";
 import { FaFileExcel } from "react-icons/fa";
 import { IoIosCreate } from "react-icons/io";
 import { IoMdClose } from "react-icons/io";
 import { FaFileUpload } from "react-icons/fa";
-import { API_KEY } from "../../config";
 import moment from "moment";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -23,10 +21,13 @@ import {
   deletePlans,
   updatePlans,
 } from "../../redux/action/plannerAction";
+import { optimizePlan } from "../../redux/action/optimizeAction";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
+import BouncyText from "../../Components/BouncingText/BouncingText";
+import { useNavigate } from "react-router-dom";
 
 dayjs.extend(customParseFormat);
 const getStatusTag = (status) => {
@@ -177,7 +178,10 @@ const Planner = () => {
   const { plans, isLoading } = useSelector((state) => state.planner);
   const user = useSelector((state) => state.account.userInfo);
   const [currentFilters, setCurrentFilters] = useState({});
-
+  const [isOptimizeModalVisible, setIsOptimizeModalVisible] = useState(false);
+  const [optimizeProgress, setOptimizeProgress] = useState(0);
+  const [isOptimizeComplete, setIsOptimizeComplete] = useState(false);
+  const navigate = useNavigate();
   // Transform data for table display
   const tableData = useMemo(() => {
     if (!plans?.data || !Array.isArray(plans.data)) {
@@ -252,7 +256,9 @@ const Planner = () => {
     }
 
     const response = await fetch(
-      `https://maps.gomaps.pro/maps/api/place/autocomplete/json?input=${input}&key=${API_KEY}&components=country:vn`
+      `https://maps.gomaps.pro/maps/api/place/autocomplete/json?input=${input}&key=${
+        import.meta.env.VITE_GOMAPS_API_KEY
+      }&components=country:vn`
     );
     const data = await response.json();
     setPredictions(data.predictions || []);
@@ -393,6 +399,87 @@ const Planner = () => {
     });
 
     setIsEditModalVisible(true);
+  };
+
+  const handleOptimizePlan = async () => {
+    if (selectedRowKeys.length === 0) {
+      notification.warning({
+        message: "No Plan Selected",
+        description: "Please select a plan to optimize.",
+        placement: "topRight",
+      });
+      return;
+    }
+
+    if (selectedRowKeys.length > 1) {
+      notification.warning({
+        message: "Multiple Selection",
+        description: "Please select only one plan to optimize.",
+        placement: "topRight",
+      });
+      return;
+    }
+
+    try {
+      const selectedPlan = tableData.find(
+        (plan) => plan.key === selectedRowKeys[0]
+      );
+
+      if (!selectedPlan) {
+        throw new Error("Selected plan not found");
+      }
+
+      setIsOptimizeModalVisible(true);
+      setOptimizeProgress(0);
+      setIsOptimizeComplete(false);
+
+      const progressInterval = setInterval(() => {
+        setOptimizeProgress((prev) => {
+          if (prev >= 100) {
+            clearInterval(progressInterval);
+            return 100;
+          }
+          return prev + 10;
+        });
+      }, 500);
+
+      const result = await dispatch(
+        optimizePlan({
+          id: selectedPlan.id,
+          destination: selectedPlan.destination,
+          deadline: selectedPlan.deadline,
+          demand: selectedPlan.demand,
+          priority: selectedPlan.priority,
+        })
+      );
+      console.log(result);
+
+      // Clear interval and set complete
+      clearInterval(progressInterval);
+      setOptimizeProgress(100);
+      setIsOptimizeComplete(true);
+
+      // Close modal
+      setTimeout(() => {
+        setIsOptimizeModalVisible(false);
+        notification.success({
+          message: "Optimization Success",
+          description:
+            "You will be navigated to optimization page in 2 seconds",
+          placement: "topRight",
+          onClose: () => {
+            navigate("/optimization");
+          },
+        });
+      }, 2000);
+    } catch (error) {
+      setIsOptimizeModalVisible(false);
+      notification.error({
+        message: "Optimization Failed",
+        description: error.message || "Failed to optimize plan.",
+        placement: "topRight",
+      });
+    }
   };
 
   const handleShowAddOneModal = () => {
@@ -708,7 +795,7 @@ const Planner = () => {
 
   return (
     <div className="min-h-screen">
-      <NavBarPlanner />
+      {/* <NavBarPlanner /> */}
       {/* Main Header Section */}
       <div className="px-4 sm:px-6 lg:px-10 py-4 bg-white mx-2 sm:mx-6 lg:mx-10">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -1141,7 +1228,10 @@ const Planner = () => {
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <button className="flex-1 sm:flex-none bg-orange-50 text-primary font-bold px-2 py-1 sm:px-4 sm:py-2 rounded-md hover:bg-primary hover:text-white text-sm sm:text-base">
+            <button
+              className="flex-1 sm:flex-none bg-orange-50 text-primary font-bold px-2 py-1 sm:px-4 sm:py-2 rounded-md hover:bg-primary hover:text-white text-sm sm:text-base"
+              onClick={handleOptimizePlan}
+            >
               Optimize Based on Selected Plan
             </button>
             <button
@@ -1582,6 +1672,33 @@ const Planner = () => {
               >
                 Cancel
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isOptimizeModalVisible && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+          <div className="bg-white p-8 rounded-lg shadow-lg relative w-80">
+            <div className="flex flex-col items-center">
+              <Progress
+                type="circle"
+                percent={optimizeProgress}
+                size={80}
+                strokeColor={{
+                  "0%": "#ff8c00",
+                  "100%": "#ff8c00",
+                }}
+              />
+              <div className="mt-6">
+                {!isOptimizeComplete ? (
+                  <BouncyText text="Optimizing" />
+                ) : (
+                  <div className="text-primary font-bold text-xl">
+                    Optimize Successfully
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
