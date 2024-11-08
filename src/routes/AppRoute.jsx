@@ -15,6 +15,7 @@ import Monitor from "../Pages/Manager/Monitor/Monitor";
 import UserManagement from "../Pages/UserManagement/UserManagement";
 import PrivateRoute from "./PrivateRoute";
 import NotFound from "../Pages/404NotFound/404NotFound";
+import PlannerLayout from "../Components/Layout/PlannerLayout";
 
 const AppRoute = () => {
   return (
@@ -27,6 +28,18 @@ const AppRoute = () => {
       <Route path="/forgot-password" element={<ForgotPassword />} />
 
       <Route
+        element={
+          <PrivateRoute allowedRoles={["planner"]}>
+            <PlannerLayout />
+          </PrivateRoute>
+        }
+      >
+        <Route path="/planner" element={<Planner />} />
+        <Route path="/optimization" element={<Optimization />} />
+        <Route path="/manageaccount" element={<UserManagement />} />
+      </Route>
+
+      <Route
         path="/admin"
         element={
           <PrivateRoute allowedRoles={["admin"]}>
@@ -35,33 +48,17 @@ const AppRoute = () => {
         }
       />
       <Route
-        path="/optimization"
-        element={
-          <PrivateRoute allowedRoles={["planner", "admin"]}>
-            <Optimization />
-          </PrivateRoute>
-        }
-      />
-      <Route
         path="/monitor"
         element={
-          <PrivateRoute allowedRoles={["manager", "admin"]}>
+          <PrivateRoute allowedRoles={["manager"]}>
             <Monitor />
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/planner"
-        element={
-          <PrivateRoute allowedRoles={["planner", "admin"]}>
-            <Planner />
           </PrivateRoute>
         }
       />
       <Route
         path="/manager"
         element={
-          <PrivateRoute allowedRoles={["manager", "admin"]}>
+          <PrivateRoute allowedRoles={["manager"]}>
             <Manager />
           </PrivateRoute>
         }
@@ -79,14 +76,6 @@ const AppRoute = () => {
         element={
           <PrivateRoute allowedRoles={["admin"]}>
             <Supplier />
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/manageaccount"
-        element={
-          <PrivateRoute allowedRoles={["planner", "manager"]}>
-            <UserManagement />
           </PrivateRoute>
         }
       />
