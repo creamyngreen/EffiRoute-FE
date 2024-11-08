@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react/prop-types */
 import { useLocation } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { useEffect } from "react";
 import { doGetAccount } from "../../redux/action/accountAction";
 import Navbar from "../Navbar/Navbar";
@@ -11,7 +11,7 @@ import AppRoute from "../../routes/AppRoute";
 const AppContent = ({ firstRenderRef }) => {
   const location = useLocation();
   const dispatch = useDispatch();
-  const user = useSelector((state) => state.account.userInfo);
+  // const user = useSelector((state) => state.account.userInfo);
 
   const protectedPaths = [
     "/admin",
@@ -27,20 +27,20 @@ const AppContent = ({ firstRenderRef }) => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      if (protectedPaths.includes(location.pathname)) {
-        if (firstRenderRef.current) {
-          dispatch(doGetAccount());
-          firstRenderRef.current = false;
-        } else if (!user || !user.access_token) {
-          dispatch(doGetAccount());
-        }
+      // Only check auth on first render for protected paths
+      if (
+        protectedPaths.some((path) => location.pathname.startsWith(path)) &&
+        firstRenderRef.current
+      ) {
+        dispatch(doGetAccount());
+        firstRenderRef.current = false;
       } else {
         firstRenderRef.current = false;
       }
     };
 
     checkAuth();
-  }, [location.pathname, dispatch, user, protectedPaths]);
+  }, [location.pathname]);
 
   const hideNavbarPaths = [
     "/login",
