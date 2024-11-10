@@ -21,16 +21,7 @@ const center = {
 
 const libraries = ["geometry"];
 
-const getRandomColor = () => {
-  const letters = "0123456789ABCDEF";
-  let color = "#";
-  for (let i = 0; i < 6; i++) {
-    color += letters[Math.floor(Math.random() * 16)];
-  }
-  return color;
-};
-
-const Map = ({ selectedRoute, selectedPlan }) => {
+const Map = ({ selectedRoute, selectedPlan, routeColors }) => {
   const [map, setMap] = useState(null);
   const [routes, setRoutes] = useState([]);
   const [selectedMarker, setSelectedMarker] = useState(null);
@@ -94,12 +85,11 @@ const Map = ({ selectedRoute, selectedPlan }) => {
                 source: sourceCoords,
                 destination: destCoords,
                 info: selectedRoute,
-                color: "#FF0000",
+                color: routeColors[selectedRoute.id],
               },
             ];
           }
         } else if (selectedPlan) {
-          // Process all routes in the selected plan
           const routesToProcess = selectedPlan.flatMap(
             (plan) => plan.data.routes
           );
@@ -119,10 +109,7 @@ const Map = ({ selectedRoute, selectedPlan }) => {
           );
 
           newRoutes = await Promise.all(
-            geocodedRoutes.map(async (route) => {
-              if (!route || !route.sourceCoords || !route.destCoords)
-                return null;
-
+            geocodedRoutes.filter(Boolean).map(async (route) => {
               bounds.extend(new window.google.maps.LatLng(route.sourceCoords));
               bounds.extend(new window.google.maps.LatLng(route.destCoords));
 
@@ -140,7 +127,7 @@ const Map = ({ selectedRoute, selectedPlan }) => {
                 source: route.sourceCoords,
                 destination: route.destCoords,
                 info: route,
-                color: getRandomColor(),
+                color: routeColors[route.id],
               };
             })
           );
@@ -164,7 +151,7 @@ const Map = ({ selectedRoute, selectedPlan }) => {
     };
 
     fetchRouteCoordinates();
-  }, [selectedPlan, selectedRoute, isLoaded, map]);
+  }, [selectedPlan, selectedRoute, isLoaded, map, routeColors]);
 
   const onLoad = React.useCallback((map) => {
     setMap(map);
@@ -208,9 +195,10 @@ const Map = ({ selectedRoute, selectedPlan }) => {
               <Polyline
                 path={route.path}
                 options={{
-                  strokeColor: route.color,
-                  strokeWeight: selectedRoute?.id === route.id ? 6 : 4,
-                  strokeOpacity: selectedRoute?.id === route.id ? 1 : 0.8,
+                  strokeColor: routeColors[route.id] || "#FF0000",
+                  strokeWeight: 4,
+                  strokeOpacity: 1,
+                  zIndex: selectedRoute?.id === route.id ? 1 : 0,
                 }}
               />
               <Marker

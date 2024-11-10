@@ -57,7 +57,12 @@ export const doAddPlan = (planData) => {
   };
 };
 
-export const fetchPlans = (page = 1, limit = 10, filters = {}) => {
+export const fetchFilterPlans = (
+  page = 1,
+  limit = 100,
+  filters = {},
+  sort = []
+) => {
   return async (dispatch) => {
     dispatch({ type: FETCH_PLANS_REQUEST });
     try {
@@ -70,6 +75,7 @@ export const fetchPlans = (page = 1, limit = 10, filters = {}) => {
           deadlineFrom: filters.deadlineFrom || null,
           deadlineTo: filters.deadlineTo || null,
         },
+        sort: sort,
       };
 
       const response = await axios.post(
@@ -223,6 +229,7 @@ export const updatePlans = (plans) => {
           priority: plan.priority === "High" ? 1 : 0,
           destination: plan.destination,
           deadline: plan.deadline,
+          status: plan.status,
         })),
       });
 
@@ -235,6 +242,7 @@ export const updatePlans = (plans) => {
           type: UPDATE_PLANS_SUCCESS,
           payload: updatedPlans,
         });
+
         return updatedPlans;
       } else {
         dispatch({

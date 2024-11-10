@@ -16,7 +16,7 @@ import moment from "moment";
 import { useDispatch, useSelector } from "react-redux";
 import {
   doAddPlan,
-  fetchPlans,
+  fetchFilterPlans,
   searchPlans,
   deletePlans,
   updatePlans,
@@ -32,12 +32,6 @@ import { useNavigate } from "react-router-dom";
 dayjs.extend(customParseFormat);
 const getStatusTag = (status) => {
   switch (status) {
-    case "Completed":
-      return (
-        <span className="bg-green-200 text-green-800 px-2 py-1 rounded">
-          Completed
-        </span>
-      );
     case "approved":
       return (
         <span className="bg-blue-200 text-blue-800 px-2 py-1 rounded">
@@ -210,17 +204,19 @@ const Planner = () => {
   }, [plans?.data, activeTab]);
 
   useEffect(() => {
-    dispatch(fetchPlans(currentPage, pageSize, currentFilters));
+    dispatch(fetchFilterPlans(currentPage, pageSize, currentFilters));
   }, [dispatch, currentPage, pageSize, currentFilters]);
 
-  const onSelectChange = (newSelectedRowKeys) => {
-    console.log("selectedRowKeys changed: ", newSelectedRowKeys);
-    setSelectedRowKeys(newSelectedRowKeys);
-  };
-
   const rowSelection = {
+    type: "checkbox",
     selectedRowKeys,
-    onChange: onSelectChange,
+    onChange: (keys) => setSelectedRowKeys(keys),
+    getCheckboxProps: (record) => ({
+      disabled: !["draft", "rejected"].includes(record.status),
+      title: !["draft", "rejected"].includes(record.status)
+        ? "Only Draft or Rejected plans can be edited"
+        : "",
+    }),
     selections: [
       Table.SELECTION_ALL,
       Table.SELECTION_INVERT,
@@ -241,7 +237,7 @@ const Planner = () => {
     const newPageSize = parseInt(event.target.value, 10);
     setPageSize(newPageSize);
     setCurrentPage(1);
-    dispatch(fetchPlans(1, newPageSize, currentFilters));
+    dispatch(fetchFilterPlans(1, newPageSize, currentFilters));
   };
 
   const toggleDetailedFilter = () => {
@@ -284,6 +280,16 @@ const Planner = () => {
       return;
     }
 
+    const demandValue = parseFloat(demandInput);
+    if (isNaN(demandValue) || demandValue <= 0) {
+      notification.warning({
+        message: "Invalid Demand",
+        description: "Demand must be a valid number greater than zero.",
+        placement: "topRight",
+      });
+      return;
+    }
+
     try {
       const planData = {
         plannerId: user.user_id,
@@ -291,11 +297,11 @@ const Planner = () => {
         deadline: deadlineInput,
         destination: destination,
         priority: modalPriorityInput === "High" ? 1 : 0,
-        demand: demandInput,
+        demand: demandValue, // Use the parsed float value
       };
       await dispatch(doAddPlan(planData));
 
-      await dispatch(fetchPlans(currentPage, pageSize));
+      await dispatch(fetchFilterPlans(currentPage, pageSize));
 
       notification.success({
         message: "Success",
@@ -355,7 +361,7 @@ const Planner = () => {
       setIsDeleteModalVisible(false);
 
       // Refresh the plans list
-      dispatch(fetchPlans(currentPage, pageSize));
+      dispatch(fetchFilterPlans(currentPage, pageSize));
     } catch (error) {
       notification.error({
         message: "Error",
@@ -429,6 +435,15 @@ const Planner = () => {
         throw new Error("Selected plan not found");
       }
 
+      if (selectedPlan.status !== "draft") {
+        notification.warning({
+          message: "Invalid Plan Status",
+          description: "Only plans with 'Draft' status can be optimized.",
+          placement: "topRight",
+        });
+        return;
+      }
+
       setIsOptimizeModalVisible(true);
       setOptimizeProgress(0);
       setIsOptimizeComplete(false);
@@ -441,7 +456,7 @@ const Planner = () => {
           }
           return prev + 10;
         });
-      }, 500);
+      }, 1000);
 
       const result = await dispatch(
         optimizePlan({
@@ -556,7 +571,7 @@ const Planner = () => {
     }
 
     setCurrentFilters(filters);
-    dispatch(fetchPlans(currentPage, pageSize, filters));
+    dispatch(fetchFilterPlans(currentPage, pageSize, filters));
   };
 
   const handleSearch = (e) => {
@@ -565,7 +580,7 @@ const Planner = () => {
     setCurrentPage(1);
 
     if (!value.trim()) {
-      dispatch(fetchPlans(1, pageSize));
+      dispatch(fetchFilterPlans(1, pageSize));
       return;
     }
 
@@ -579,7 +594,21 @@ const Planner = () => {
   const handleUpdatePlans = async (e) => {
     e.preventDefault();
 
-    // Validation check
+    // Check if any plan has a status other than 'draft' or 'rejected'
+    const hasInvalidStatus = editData.some(
+      (plan) => !["draft", "rejected"].includes(plan.status)
+    );
+
+    if (hasInvalidStatus) {
+      notification.warning({
+        message: "Invalid Plan Status",
+        description:
+          "Only plans with 'Draft' or 'Rejected' status can be updated.",
+        placement: "topRight",
+      });
+      return;
+    }
+
     if (
       !singleEditPlan.demand ||
       !singleEditPlan.destination ||
@@ -593,6 +622,15 @@ const Planner = () => {
       return;
     }
 
+    if (Number(singleEditPlan.demand) <= 0) {
+      notification.warning({
+        message: "Invalid Demand",
+        description: "Demand must be greater than zero.",
+        placement: "topRight",
+      });
+      return;
+    }
+
     try {
       const plansToUpdate = editData.map((plan) => ({
         id: plan.id,
@@ -600,6 +638,8 @@ const Planner = () => {
         priority: singleEditPlan.priority,
         destination: singleEditPlan.destination,
         deadline: moment(singleEditPlan.deadline).format("YYYY-MM-DD"),
+        // Set status to "draft" if current status is "rejected", otherwise keep current status
+        status: plan.status === "rejected" ? "draft" : plan.status,
       }));
 
       await dispatch(updatePlans(plansToUpdate));
@@ -615,7 +655,7 @@ const Planner = () => {
       setIsEditModalVisible(false);
 
       // Refresh the plans list
-      dispatch(fetchPlans(currentPage, pageSize));
+      dispatch(fetchFilterPlans(currentPage, pageSize));
     } catch (error) {
       notification.error({
         message: "Error",
@@ -701,7 +741,7 @@ const Planner = () => {
             placement: "topRight",
           });
 
-          dispatch(fetchPlans(currentPage, pageSize));
+          dispatch(fetchFilterPlans(currentPage, pageSize));
           handleCloseUploadModal();
         } catch (error) {
           console.error("API Error:", error);
@@ -770,7 +810,7 @@ const Planner = () => {
 
     const filters = tab === "all" ? {} : { status: tab };
     setCurrentFilters(filters); // Update current filters
-    dispatch(fetchPlans(1, pageSize, filters));
+    dispatch(fetchFilterPlans(1, pageSize, filters));
   };
 
   // get the header text based on activeTab
@@ -786,8 +826,6 @@ const Planner = () => {
         return "Manage Approved Plans";
       case "rejected":
         return "Manage Rejected Plans";
-      case "completed":
-        return "Manage Completed Plans";
       default:
         return "Manage Plans";
     }
@@ -872,15 +910,6 @@ const Planner = () => {
               onClick={() => handleTabChange("approved")}
             >
               Manage Approved Plans
-            </button>
-            <button
-              type="button"
-              className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 ${
-                activeTab === "completed" ? "bg-gray-100 text-primary" : ""
-              }`}
-              onClick={() => handleTabChange("completed")}
-            >
-              Manage Completed Plans
             </button>
             <button
               type="button"
@@ -1041,7 +1070,11 @@ const Planner = () => {
                         }
                         setCurrentFilters(updatedFilters);
                         dispatch(
-                          fetchPlans(currentPage, pageSize, updatedFilters)
+                          fetchFilterPlans(
+                            currentPage,
+                            pageSize,
+                            updatedFilters
+                          )
                         );
                       }
                     }}
@@ -1140,21 +1173,6 @@ const Planner = () => {
                       }}
                     >
                       Rejected
-                    </button>
-                    <button
-                      type="button"
-                      className={`px-4 py-2 text-sm text-gray-900 bg-white border border-gray-200 rounded-e-lg ${
-                        activeStatus === "completed"
-                          ? "bg-orange-100 text-primary border-primary"
-                          : ""
-                      }`}
-                      onClick={() => {
-                        setActiveStatus(
-                          activeStatus === "completed" ? null : "completed"
-                        );
-                      }}
-                    >
-                      Completed
                     </button>
                   </div>
                 </div>
@@ -1271,7 +1289,7 @@ const Planner = () => {
                 setCurrentPage(page);
                 setPageSize(size);
                 // Use the saved filters
-                dispatch(fetchPlans(page, size, currentFilters));
+                dispatch(fetchFilterPlans(page, size, currentFilters));
               },
             }}
             components={{
@@ -1379,14 +1397,13 @@ const Planner = () => {
                 <div className="space-y-2">
                   <label className="block">Demand</label>
                   <input
-                    type="text"
-                    required
+                    type="number"
+                    step="0.01"
+                    min="0"
                     value={demandInput}
                     onChange={(e) => setDemandInput(e.target.value)}
-                    className={`border border-gray-300 rounded p-2 w-full ${
-                      isFormSubmitted && !demandInput ? "border-red-500" : ""
-                    }`}
-                    placeholder="Enter your demand"
+                    className="border border-gray-300 rounded p-2 w-full"
+                    placeholder="Enter demand in tons"
                   />
                 </div>
 
@@ -1600,6 +1617,7 @@ const Planner = () => {
                       <label className="block">Demand</label>
                       <input
                         type="number"
+                        min="1"
                         value={singleEditPlan.demand}
                         onChange={(e) => {
                           setSingleEditPlan((prev) => ({
@@ -1706,6 +1724,5 @@ const Planner = () => {
     </div>
   );
 };
-
 
 export default Planner;

@@ -13,6 +13,7 @@ const INITIAL_STATE = {
     access_token: "",
     refresh_token: "",
     email: "",
+    fullname: "",
     username: "",
     roleWithPermission: {},
   },

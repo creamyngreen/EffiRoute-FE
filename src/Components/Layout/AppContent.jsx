@@ -22,7 +22,8 @@ const AppContent = ({ firstRenderRef }) => {
     "/manager",
     "/monitor",
     "/users",
-    "/manageaccount",
+    "/planner/account",
+    "/manager/account",
   ];
 
   useEffect(() => {

@@ -16,7 +16,7 @@ import UserManagement from "../Pages/UserManagement/UserManagement";
 import PrivateRoute from "./PrivateRoute";
 import NotFound from "../Pages/404NotFound/404NotFound";
 import PlannerLayout from "../Components/Layout/PlannerLayout";
-
+import ManagerLayout from "../Components/Layout/ManagerLayout";
 const AppRoute = () => {
   return (
     <Routes>
@@ -27,6 +27,7 @@ const AppRoute = () => {
       <Route path="/code" element={<LoginWithSSO />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
 
+      {/* Planner Route */}
       <Route
         element={
           <PrivateRoute allowedRoles={["planner"]}>
@@ -36,38 +37,36 @@ const AppRoute = () => {
       >
         <Route path="/planner" element={<Planner />} />
         <Route path="/optimization" element={<Optimization />} />
-        <Route path="/manageaccount" element={<UserManagement />} />
+        <Route path="/planner/account" element={<UserManagement />} />
       </Route>
 
+      {/* Manager Route */}
       <Route
-        path="/admin"
-        element={
-          <PrivateRoute allowedRoles={["admin"]}>
-            <Admin />
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/monitor"
         element={
           <PrivateRoute allowedRoles={["manager"]}>
-            <Monitor />
+            <ManagerLayout />
           </PrivateRoute>
         }
-      />
-      <Route
-        path="/manager"
-        element={
-          <PrivateRoute allowedRoles={["manager"]}>
-            <Manager />
-          </PrivateRoute>
-        }
-      />
+      >
+        <Route path="/monitor" element={<Monitor />} />
+        <Route path="/manager" element={<Manager />} />
+        <Route path="/manager/account" element={<UserManagement />} />
+      </Route>
+
+      {/* Admin Route */}
       <Route
         path="/account"
         element={
           <PrivateRoute allowedRoles={["admin"]}>
             <AccountManagement />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/admin"
+        element={
+          <PrivateRoute allowedRoles={["admin"]}>
+            <Admin />
           </PrivateRoute>
         }
       />
