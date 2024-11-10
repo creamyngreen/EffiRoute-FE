@@ -41,6 +41,7 @@ export const doLogin = (ssoToken) => {
       });
       if (res && +res.EC === 1) {
         dispatch({ type: LOGIN_SUCCESS, user: res.DT });
+        dispatch(doGetAccount());
       } else {
         dispatch({ type: LOGIN_FAILURE, error: res.EM });
       }
