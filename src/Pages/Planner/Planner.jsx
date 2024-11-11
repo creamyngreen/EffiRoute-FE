@@ -1515,7 +1515,7 @@ const Planner = () => {
               <IoMdClose />
             </button>
             <h2 className="text-xl text-center font-bold mb-10">
-              Please upload the procurement plan Excel file
+              Please upload the procurement plan (.xlsx, .xls)
             </h2>
             <div className="flex flex-col items-center border border-gray-300 rounded p-5">
               <FaFileUpload className="text-primary w-9 h-9" />
