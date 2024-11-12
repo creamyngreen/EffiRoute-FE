@@ -15,8 +15,8 @@ const AppContent = ({ firstRenderRef }) => {
 
   const protectedPaths = [
     "/admin",
-    "/account",
-    "/supplier",
+    "/admin/account",
+    "/admin/supplier",
     "/planner",
     "/optimization",
     "/manager",
@@ -24,6 +24,7 @@ const AppContent = ({ firstRenderRef }) => {
     "/users",
     "/planner/account",
     "/manager/account",
+    "/admin/dashboard",
   ];
 
   useEffect(() => {

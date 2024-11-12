@@ -5,7 +5,7 @@ import filter from "../../../assets/Admin/filter.png";
 import arrowdown from "../../../assets/Admin/arrowdown.png";
 import reset from "../../../assets/Admin/reset.png";
 
-const AccountManagement = () => {
+const Dashboard = () => {
   const [users, setUsers] = useState([
     {
       id: 1,
@@ -328,4 +328,4 @@ const AccountManagement = () => {
   );
 };
 
-export default AccountManagement;
+export default Dashboard;
