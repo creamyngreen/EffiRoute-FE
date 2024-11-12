@@ -4,6 +4,7 @@ import { FaUser } from "react-icons/fa";
 import { IoIosBusiness } from "react-icons/io";
 import { useSelector } from "react-redux";
 import "./UserManagement.css";
+
 const UserManagement = () => {
   const user = useSelector((state) => state.account.userInfo);
   const [isEditing, setIsEditing] = useState(false);
@@ -24,7 +25,6 @@ const UserManagement = () => {
     sector: "Route Optimization",
   });
 
-  // Update memberInfo when user data is available
   useEffect(() => {
     if (user) {
       setMemberInfo({
@@ -52,7 +52,6 @@ const UserManagement = () => {
   };
 
   const handleSaveChanges = () => {
-    // Validate passwords if they were changed
     if (memberInfo.newPassword || memberInfo.confirmPassword) {
       if (!memberInfo.oldPassword) {
         alert("Please enter your current password");
@@ -67,11 +66,8 @@ const UserManagement = () => {
         return;
       }
     }
-
     // TODO: Add API call to update user information
     setIsEditing(false);
-
-    // Clear password fields
     setMemberInfo((prev) => ({
       ...prev,
       oldPassword: "",
@@ -86,11 +82,9 @@ const UserManagement = () => {
   };
 
   const handleSaveCompanyChanges = () => {
-    // Logic to save changes (e.g., API call)
     setIsEditingCompany(false);
   };
 
-  // Update the useEffect to reset password fields when editing is cancelled
   useEffect(() => {
     if (!isEditing) {
       setMemberInfo((prev) => ({
@@ -104,229 +98,112 @@ const UserManagement = () => {
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-gray-50">
-      {/* Sidebar - Hidden on mobile, shown as top bar */}
-      <aside className="w-full md:w-64 lg:w-80 border-b md:border-r md:border-b-0 bg-white p-4">
-        <h3 className="text-lg font-semibold text-gray-400 mb-4">
-          Basic Information Management
+      <aside className="w-full md:w-64 lg:w-80 border-b md:border-r bg-white p-4">
+        <h3 className="text-lg font-semibold text-gray-500 mb-4">
+          Account & Company Information
         </h3>
         <ul className="space-y-2">
-          <li className="hover:bg-gray-200 p-2 mb-4 rounded cursor-pointer">
+          <li className="hover:bg-gray-200 p-2 rounded cursor-pointer">
             Manage Account Information
           </li>
-        </ul>
-        <h3 className="text-lg font-semibold text-gray-400 mb-4">
-          Manage Payment Information
-        </h3>
-        <ul className="space-y-2">
           <li className="hover:bg-gray-200 p-2 rounded cursor-pointer">
             Payment Management
           </li>
         </ul>
       </aside>
 
-      {/* Main Content */}
-      <div className="flex-1 p-4 md:p-6">
-        {/* Member Information Section */}
-        <div className="bg-white rounded-lg shadow-sm mb-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 border-b">
-            <div className="flex items-center mb-4 sm:mb-0">
-              <FaUser className="text-primary bg-orange-100 rounded-lg w-10 h-10 p-2 mr-2" />
-              <h2 className="text-xl md:text-2xl font-bold">
-                Member Information
-              </h2>
-            </div>
-            <div className="flex items-center w-full sm:w-auto">
-              <button
-                className="flex-1 sm:flex-none bg-gray-200 text-gray-500 px-4 py-2 rounded hover:bg-gray-300"
-                onClick={handleEditToggle}
-              >
-                {isEditing ? "Cancel" : "Edit information"}
-              </button>
-              {isEditing && (
-                <button
-                  className="flex-1 sm:flex-none bg-primary text-white px-4 py-2 rounded hover:bg-orange-600 ml-2"
-                  onClick={handleSaveChanges}
-                >
-                  Save Changes
-                </button>
-              )}
-            </div>
+      <div className="flex-1 p-6">
+        <InfoSection
+          title="Member Information"
+          icon={<FaUser className="text-primary bg-orange-100 rounded-lg w-10 h-10 p-2 mr-2" />}
+          isEditing={isEditing}
+          onToggleEdit={handleEditToggle}
+          onSaveChanges={handleSaveChanges}
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <InfoField label="Email" value={memberInfo.email} name="email" isEditing={isEditing} onChange={handleInputChange} />
+            <PasswordField memberInfo={memberInfo} isEditing={isEditing} onChange={handleInputChange} />
+            <InfoField label="Name" value={memberInfo.username} name="username" isEditing={isEditing} onChange={handleInputChange} />
+            <InfoField label="Phone Number" value={memberInfo.phone} name="phone" isEditing={isEditing} onChange={handleInputChange} />
+            <CheckboxField label="Receive Marketing Info" checked={memberInfo.marketingAgreement} isEditing={isEditing} onChange={() => setMemberInfo((prev) => ({ ...prev, marketingAgreement: !prev.marketingAgreement }))} />
           </div>
+        </InfoSection>
 
-          <div className="p-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <InfoField
-                label="Email"
-                value={memberInfo.email}
-                name="email"
-                isEditing={isEditing}
-                onChange={handleInputChange}
-              />
-              <InfoField
-                label="Password"
-                value={memberInfo.password}
-                memberInfo={memberInfo}
-                isEditing={isEditing}
-                isPassword={true}
-                onChange={handleInputChange}
-              />
-              <InfoField
-                label="Name"
-                value={memberInfo.username}
-                name="username"
-                isEditing={isEditing}
-                onChange={handleInputChange}
-              />
-              <InfoField
-                label="Phone number"
-                value={memberInfo.phone}
-                isEditing={isEditing}
-                onChange={(e) => handleInputChange(e, "phone")}
-              />
-              <InfoField
-                label="Receive marketing information"
-                value={memberInfo.marketingAgreement ? "Yes" : "No"}
-                isEditing={isEditing}
-                isCheckbox={true}
-                checked={memberInfo.marketingAgreement}
-                onChange={() =>
-                  setMemberInfo((prev) => ({
-                    ...prev,
-                    marketingAgreement: !prev.marketingAgreement,
-                  }))
-                }
-              />
-            </div>
+        <InfoSection
+          title="Company Information"
+          icon={<IoIosBusiness className="text-green-500 bg-green-100 rounded-lg w-10 h-10 p-2 mr-2" />}
+          isEditing={isEditingCompany}
+          onToggleEdit={() => setIsEditingCompany(!isEditingCompany)}
+          onSaveChanges={handleSaveCompanyChanges}
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <InfoField label="Company Name" value={companyInfo.companyName} name="companyName" isEditing={isEditingCompany} onChange={handleCompanyInputChange} />
+            <InfoField label="Business Registration Number" value={companyInfo.registrationNumber} name="registrationNumber" isEditing={isEditingCompany} onChange={handleCompanyInputChange} />
+            <InfoField label="Industrial Sector" value={companyInfo.sector} name="sector" isEditing={isEditingCompany} onChange={handleCompanyInputChange} />
           </div>
-        </div>
-
-        {/* Company Information Section */}
-        <div className="bg-white rounded-lg shadow-sm mb-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 border-b">
-            <div className="flex items-center mb-4 sm:mb-0">
-              <IoIosBusiness className="text-green-500 bg-green-100 rounded-lg w-10 h-10 p-2 mr-2" />
-              <h2 className="text-xl md:text-2xl font-bold">
-                Company Information
-              </h2>
-            </div>
-            <div className="flex items-center w-full sm:w-auto">
-              <button
-                className="flex-1 sm:flex-none bg-gray-200 text-gray-500 px-4 py-2 rounded hover:bg-gray-300"
-                onClick={() => setIsEditingCompany(!isEditingCompany)}
-              >
-                {isEditingCompany ? "Cancel" : "Edit information"}
-              </button>
-              {isEditingCompany && (
-                <button
-                  className="flex-1 sm:flex-none bg-primary text-white px-4 py-2 rounded hover:bg-orange-600 ml-2"
-                  onClick={handleSaveCompanyChanges}
-                >
-                  Save Changes
-                </button>
-              )}
-            </div>
-          </div>
-
-          <div className="p-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <InfoField label="Company name" value={companyInfo.companyName} />
-              <InfoField
-                label="Business registration number"
-                value={companyInfo.registrationNumber}
-                isEditing={isEditingCompany}
-                onChange={(e) =>
-                  handleCompanyInputChange(e, "registrationNumber")
-                }
-              />
-              <InfoField
-                label="Industrial sector"
-                value={companyInfo.sector}
-                isEditing={isEditingCompany}
-                onChange={(e) => handleCompanyInputChange(e, "sector")}
-              />
-            </div>
-          </div>
-        </div>
+        </InfoSection>
       </div>
     </div>
   );
 };
 
-// Reusable InfoField component
-const InfoField = ({
-  label,
-  value,
-  name,
-  isEditing,
-  onChange,
-  isPassword,
-  isCheckbox,
-  checked,
-  memberInfo,
-}) => {
-  return (
-    <div className="flex flex-col md:flex-row md:items-center p-2">
-      <label className="text-gray-600 w-full md:w-1/3 mb-1 md:mb-0">
-        {label}
-      </label>
-      <div className="w-full md:w-2/3">
-        {isEditing ? (
-          isPassword ? (
-            <div className="space-y-2 w-full">
-              <input
-                type="password"
-                name="oldPassword"
-                placeholder="Current Password"
-                value={memberInfo?.oldPassword || ""}
-                onChange={onChange}
-                className="w-full p-2 border rounded mb-2"
-              />
-              <input
-                type="password"
-                name="newPassword"
-                placeholder="New Password"
-                value={memberInfo?.newPassword || ""}
-                onChange={onChange}
-                className="w-full p-2 border rounded mb-2"
-              />
-              <input
-                type="password"
-                name="confirmPassword"
-                placeholder="Confirm New Password"
-                value={memberInfo?.confirmPassword || ""}
-                onChange={onChange}
-                className="w-full p-2 border rounded"
-              />
-              {memberInfo?.newPassword &&
-                memberInfo?.confirmPassword &&
-                memberInfo.newPassword !== memberInfo.confirmPassword && (
-                  <span className="text-red-500 text-sm">
-                    Passwords do not match
-                  </span>
-                )}
-            </div>
-          ) : isCheckbox ? (
-            <input
-              type="checkbox"
-              checked={checked}
-              onChange={onChange}
-              className="w-4 h-4"
-            />
-          ) : (
-            <input
-              type="text"
-              name={name}
-              value={value}
-              onChange={onChange}
-              className="w-full p-2 border rounded"
-            />
-          )
-        ) : (
-          <span className="font-bold">{value}</span>
+const InfoSection = ({ title, icon, isEditing, onToggleEdit, onSaveChanges, children }) => (
+  <div className="bg-white rounded-lg shadow-sm mb-6 p-6">
+    <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center">
+        {icon}
+        <h2 className="text-xl font-bold">{title}</h2>
+      </div>
+      <div className="flex">
+        <button className="bg-gray-200 text-gray-500 px-4 py-2 rounded hover:bg-gray-300 mr-2" onClick={onToggleEdit}>
+          {isEditing ? "Cancel" : "Edit"}
+        </button>
+        {isEditing && (
+          <button className="bg-primary text-white px-4 py-2 rounded hover:bg-orange-600" onClick={onSaveChanges}>
+            Save Changes
+          </button>
         )}
       </div>
     </div>
-  );
-};
+    {children}
+  </div>
+);
+
+const InfoField = ({ label, value, name, isEditing, onChange }) => (
+  <div className="flex flex-col">
+    <label className="text-gray-600 mb-1">{label}</label>
+    {isEditing ? (
+      <input type="text" name={name} value={value} onChange={onChange} className="w-full p-2 border rounded" />
+    ) : (
+      <span className="text-gray-800 font-medium">{value}</span>
+    )}
+  </div>
+);
+
+const PasswordField = ({ memberInfo, isEditing, onChange }) => (
+  <div className="flex flex-col">
+    <label className="text-gray-600 mb-1">Password</label>
+    {isEditing ? (
+      <div className="space-y-2">
+        <input type="password" name="oldPassword" placeholder="Current Password" value={memberInfo.oldPassword} onChange={onChange} className="w-full p-2 border rounded" />
+        <input type="password" name="newPassword" placeholder="New Password" value={memberInfo.newPassword} onChange={onChange} className="w-full p-2 border rounded" />
+        <input type="password" name="confirmPassword" placeholder="Confirm New Password" value={memberInfo.confirmPassword} onChange={onChange} className="w-full p-2 border rounded" />
+      </div>
+    ) : (
+      <span className="text-gray-800 font-medium">********</span>
+    )}
+  </div>
+);
+
+const CheckboxField = ({ label, checked, isEditing, onChange }) => (
+  <div className="flex items-center">
+    <label className="text-gray-600 mr-2">{label}</label>
+    {isEditing ? (
+      <input type="checkbox" checked={checked} onChange={onChange} className="w-5 h-5" />
+    ) : (
+      <span className="text-gray-800 font-medium">{checked ? "Yes" : "No"}</span>
+    )}
+  </div>
+);
 
 export default UserManagement;
