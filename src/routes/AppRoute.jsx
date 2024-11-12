@@ -17,6 +17,7 @@ import PrivateRoute from "./PrivateRoute";
 import NotFound from "../Pages/404NotFound/404NotFound";
 import PlannerLayout from "../Components/Layout/PlannerLayout";
 import ManagerLayout from "../Components/Layout/ManagerLayout";
+import Dashboard from "../Pages/Admin/Dashboard/Dashboard";
 const AppRoute = () => {
   return (
     <Routes>
@@ -55,7 +56,7 @@ const AppRoute = () => {
 
       {/* Admin Route */}
       <Route
-        path="/account"
+        path="/admin/account"
         element={
           <PrivateRoute allowedRoles={["admin"]}>
             <AccountManagement />
@@ -71,14 +72,21 @@ const AppRoute = () => {
         }
       />
       <Route
-        path="/supplier"
+        path="/admin/supplier"
         element={
           <PrivateRoute allowedRoles={["admin"]}>
             <Supplier />
           </PrivateRoute>
         }
       />
-
+      <Route
+        path="/admin/dashboard"
+        element={
+          <PrivateRoute allowedRoles={["admin"]}>
+            <Dashboard />
+          </PrivateRoute>
+        }
+      />
       <Route path="/404" element={<NotFound />} />
       <Route path="*" element={<NotFound />} />
     </Routes>

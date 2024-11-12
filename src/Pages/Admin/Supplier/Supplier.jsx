@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import TopSearchBar from "../../../Components/TopSearchBar/TopSearchBar";
+import NavBarAdmin from "../../../Components/NavBarAdmin/NavBarAdmin";
 import SideBarAdmin from "../../../Components/SidebarAdmin/SidebarAdmin";
 import filter from "../../../assets/Admin/filter.png";
 import arrowdown from "../../../assets/Admin/arrowdown.png";
@@ -158,7 +158,7 @@ const SupplierManagement = () => {
     <div className="flex h-screen font-nunito">
       <SideBarAdmin />
       <div className="flex-1 flex flex-col">
-        <TopSearchBar />
+        <NavBarAdmin />
         <div className="p-6 bg-gray-100 flex-grow">
           <h1 className="text-3xl font-bold mb-4">Supplier Management</h1>
 

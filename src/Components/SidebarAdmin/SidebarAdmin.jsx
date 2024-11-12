@@ -1,152 +1,101 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import dashboard from "../../assets/Admin/dashboard.png";
-import user from "../../assets/Admin/user.png";
-import supplier from "../../assets/Admin/supplier.png";
-import order from "../../assets/Admin/order.png";
-import audit from "../../assets/Admin/audit.png";
-import pricing from "../../assets/Admin/pricing.png";
-import calendar from "../../assets/Admin/calendar.png";
-import todo from "../../assets/Admin/todo.png";
-import contact from "../../assets/Admin/contact.png";
-import invoice from "../../assets/Admin/invoice.png";
-import UIelement from "../../assets/Admin/UIelement.png";
-import team from "../../assets/Admin/team.png";
-import table from "../../assets/Admin/table.png";
-import settings from "../../assets/Admin/settings.png";
-import logout from "../../assets/Admin/logout.png";
+import React, { useState } from "react";
+import { LuLayoutDashboard } from "react-icons/lu";
+import { MdManageAccounts } from "react-icons/md";
+import { MdSupervisorAccount } from "react-icons/md";
+import { MdEmojiTransportation } from "react-icons/md";
+import { MdOutlineManageHistory } from "react-icons/md";
+import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
+import { Button, Layout, Menu, theme } from "antd";
 import Logo from "../../assets/Home/Logo/Logo.png";
+import { Link, Routes, Route } from "react-router-dom";
+import Supplier from "../../Pages/Admin/Supplier/Supplier";
+
+const { Header, Sider, Content } = Layout;
 
 const Sidebar = () => {
-    return (
-        <div className="w-64 h-screen bg-white text-black font-xl font-nunito font-semibold flex flex-col ">
-            {/* Logo Section */}
-            <div className="flex items-center justify-center h-16 mt-3 ">
-                <img src={Logo} alt="Logo" className="h-10" />
-            </div>
+  const [collapsed, setCollapsed] = useState(false);
+  const {
+    token: { colorBgContainer, borderRadiusLG },
+  } = theme.useToken();
 
-            {/* Dashboard Section */}
-            <div className="flex flex-col p-4 space-y-6 border-r border-gray-300">
-                {/* Main Links */}
-                <div className="flex flex-col space-y-4 ">
-                    <Link
-                        to="/dashboard"
-                        className="flex items-center space-x-4 hover:bg-[#4880FF] p-2 rounded group"
-                    >
-                        <img src={dashboard} alt="Dashboard" className="w-5 h-5 group-hover:filter group-hover:brightness-0 group-hover:invert" />
-                        <span className="group-hover:text-white">Dashboard</span>
-                    </Link>
-                    <Link
-                        to="/account"
-                        className="flex items-center space-x-4 hover:bg-[#4880FF] p-2 rounded group"
-                    >
-                        <img src={user} alt="Account" className="w-5 h-5 group-hover:filter group-hover:brightness-0 group-hover:invert" />
-                        <span className="group-hover:text-white">Account</span>
-                    </Link>
-                    <Link
-                        to="/supplier"
-                        className="flex items-center space-x-4 hover:bg-[#4880FF] p-2 rounded group"
-                    >
-                        <img src={supplier} alt="Supplier" className="w-5 h-5 group-hover:filter group-hover:brightness-0 group-hover:invert" />
-                        <span className="group-hover:text-white">Supplier</span>
-                    </Link>
-                    <Link
-                        to="/order"
-                        className="flex items-center space-x-4 hover:bg-[#4880FF] p-2 rounded group"
-                    >
-                        <img src={order} alt="Order" className="w-5 h-5 group-hover:filter group-hover:brightness-0 group-hover:invert" />
-                        <span className="group-hover:text-white">Order</span>
-                    </Link>
-                    <Link
-                        to="/audit"
-                        className="flex items-center space-x-4 hover:bg-[#4880FF] p-2 rounded group"
-                    >
-                        <img src={audit} alt="Audit Log" className="w-5 h-5 group-hover:filter group-hover:brightness-0 group-hover:invert" />
-                        <span className="group-hover:text-white">Audit Log</span>
-                    </Link>
-                </div>
+  return (
+    <Layout>
+      <Sider trigger={null} collapsible collapsed={collapsed} style={{ background: "white" }}>
+        <div className="demo-logo-vertical" />
+        <Menu
+          theme="light"
+          mode="inline"
+          defaultSelectedKeys={["1"]}
+          items={[
+            {
+              key: "1",
+              icon: <LuLayoutDashboard />,
+              label: "Dashboard",
+            },
+            {
+              key: "2",
+              icon: <MdManageAccounts />,
+              label: "Account",
 
-                {/* Pages Section */}
-                <div className="flex flex-col space-y-4">
-                    <h3 className="text-gray-400">PAGES</h3>
-                    <Link
-                        to="/pricing"
-                        className="flex items-center space-x-4 hover:bg-[#4880FF] p-2 rounded group"
-                    >
-                        <img src={pricing} alt="Pricing" className="w-5 h-5 group-hover:filter group-hover:brightness-0 group-hover:invert" />
-                        <span className="group-hover:text-white">Pricing</span>
-                    </Link>
-                    <Link
-                        to="/calendar"
-                        className="flex items-center space-x-4 hover:bg-[#4880FF] p-2 rounded group"
-                    >
-                        <img src={calendar} alt="Calendar" className="w-5 h-5 group-hover:filter group-hover:brightness-0 group-hover:invert" />
-                        <span className="group-hover:text-white">Calendar</span>
-                    </Link>
-                    <Link
-                        to="/todo"
-                        className="flex items-center space-x-4 hover:bg-[#4880FF] p-2 rounded group"
-                    >
-                        <img src={todo} alt="To-Do" className="w-5 h-5 group-hover:filter group-hover:brightness-0 group-hover:invert" />
-                        <span className="group-hover:text-white">To-Do</span>
-                    </Link>
-                    <Link
-                        to="/contact"
-                        className="flex items-center space-x-4 hover:bg-[#4880FF] p-2 rounded group"
-                    >
-                        <img src={contact} alt="Contact" className="w-5 h-5 group-hover:filter group-hover:brightness-0 group-hover:invert" />
-                        <span className="group-hover:text-white">Contact</span>
-                    </Link>
-                    <Link
-                        to="/invoice"
-                        className="flex items-center space-x-4 hover:bg-[#4880FF] p-2 rounded group"
-                    >
-                        <img src={invoice} alt="Invoice" className="w-5 h-5 group-hover:filter group-hover:brightness-0 group-hover:invert" />
-                        <span className="group-hover:text-white">Invoice</span>
-                    </Link>
-                    <Link
-                        to="/uielements"
-                        className="flex items-center space-x-4 hover:bg-[#4880FF] p-2 rounded group"
-                    >
-                        <img src={UIelement} alt="UI Elements" className="w-5 h-5 group-hover:filter group-hover:brightness-0 group-hover:invert" />
-                        <span className="group-hover:text-white">UI Elements</span>
-                    </Link>
-                    <Link
-                        to="/team"
-                        className="flex items-center space-x-4 hover:bg-[#4880FF] p-2 rounded group"
-                    >
-                        <img src={team} alt="Team" className="w-5 h-5 group-hover:filter group-hover:brightness-0 group-hover:invert" />
-                        <span className="group-hover:text-white">Team</span>
-                    </Link>
-                    <Link
-                        to="/table"
-                        className="flex items-center space-x-4 hover:bg-[#4880FF] p-2 rounded group"
-                    >
-                        <img src={table} alt="Table" className="w-5 h-5 group-hover:filter group-hover:brightness-0 group-hover:invert" />
-                        <span className="group-hover:text-white">Table</span>
-                    </Link>
-                </div>
+            },
+            {
+              key: "3",
+              icon: <MdSupervisorAccount />,
+              label: "Supplier",
 
-                {/* Settings and Logout */}
-                <div className="flex flex-col space-y-4 mt-auto">
-                    <Link
-                        to="/settings"
-                        className="flex items-center space-x-4 hover:bg-[#4880FF] p-2 rounded group"
-                    >
-                        <img src={settings} alt="Settings" className="w-5 h-5 group-hover:filter group-hover:brightness-0 group-hover:invert" />
-                        <span className="group-hover:text-white">Settings</span>
-                    </Link>
-                    <Link
-                        to="/logout"
-                        className="flex items-center space-x-4 hover:bg-[#4880FF] p-2 rounded group"
-                    >
-                        <img src={logout} alt="Logout" className="w-5 h-5 group-hover:filter group-hover:brightness-0 group-hover:invert" />
-                        <span className="group-hover:text-white">Logout</span>
-                    </Link>
-                </div>
-            </div>
-        </div>
-    );
+            },
+            {
+              key: "4",
+              icon: <MdEmojiTransportation />,
+              label: "Vehicle",
+            },
+            {
+              key: "5",
+              icon: <MdOutlineManageHistory />,
+              label: "Supplier",
+            },
+            {
+              key: "6",
+              icon: <MdOutlineManageHistory />,
+              label: "Audit log",
+            },
+          ]}
+        />
+      </Sider>
+      <Layout>
+        <Header style={{ padding: 0, background: colorBgContainer }}>
+          <div className="flex items-center">
+            <Button
+              type="text"
+              icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+              onClick={() => setCollapsed(!collapsed)}
+              style={{
+                fontSize: "16px",
+                width: 64,
+                height: 64,
+              }}
+            />
+            <a
+              href="/"
+              className="flex items-center space-x-3 rtl:space-x-reverse"
+            >
+              <img src={Logo} className="h-8 sm:h-12" alt="Logo" />
+            </a>
+          </div>
+        </Header>
+        <Content
+          style={{
+            margin: "24px 16px",
+            padding: 24,
+            minHeight: 280,
+            background: colorBgContainer,
+            borderRadius: borderRadiusLG,
+          }}
+        >
+        </Content>
+      </Layout>
+    </Layout>
+  );
 };
 
 export default Sidebar;
