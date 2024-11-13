@@ -29,6 +29,7 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 import BouncyText from "../../Components/BouncingText/BouncingText";
 import { useNavigate } from "react-router-dom";
 
+
 dayjs.extend(customParseFormat);
 const getStatusTag = (status) => {
   switch (status) {
@@ -176,6 +177,7 @@ const Planner = () => {
   const [optimizeProgress, setOptimizeProgress] = useState(0);
   const [isOptimizeComplete, setIsOptimizeComplete] = useState(false);
   const navigate = useNavigate();
+
   // Transform data for table display
   const tableData = useMemo(() => {
     if (!plans?.data || !Array.isArray(plans.data)) {
