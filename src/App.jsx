@@ -7,7 +7,7 @@ import { SocketProvider } from "./contexts/SocketContext";
 import { NotificationProvider } from "./contexts/NotificationContext";
 
 function App() {
-  const isLoading = useSelector((state) => state.account.isLoading);
+  // const isLoading = useSelector((state) => state.account.isLoading);
   const firstRenderRef = useRef(true);
 
   const style = {
@@ -18,6 +18,7 @@ function App() {
   };
 
   return (
+
     <SocketProvider>
       <NotificationProvider>
         <Router>
@@ -31,6 +32,7 @@ function App() {
         </Router>
       </NotificationProvider>
     </SocketProvider>
+
   );
 }
 

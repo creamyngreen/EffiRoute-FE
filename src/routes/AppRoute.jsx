@@ -18,6 +18,10 @@ import NotFound from "../Pages/404NotFound/404NotFound";
 import PlannerLayout from "../Components/Layout/PlannerLayout";
 import ManagerLayout from "../Components/Layout/ManagerLayout";
 import Dashboard from "../Pages/Admin/Dashboard/Dashboard";
+import AdminLayout from "../Components/Layout/AdminLayout";
+import Vehicle from "../Pages/Admin/Vehicle/Vehicle";
+import Parking from "../Pages/Admin/Parking/Parking";
+import AuditLog from "../Pages/Admin/AuditLog/AuditLog";
 const AppRoute = () => {
   return (
     <Routes>
@@ -56,37 +60,70 @@ const AppRoute = () => {
 
       {/* Admin Route */}
       <Route
-        path="/admin/account"
         element={
           <PrivateRoute allowedRoles={["admin"]}>
-            <AccountManagement />
+            <AdminLayout />
           </PrivateRoute>
         }
-      />
-      <Route
-        path="/admin"
-        element={
-          <PrivateRoute allowedRoles={["admin"]}>
-            <Admin />
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/admin/supplier"
-        element={
-          <PrivateRoute allowedRoles={["admin"]}>
-            <Supplier />
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/admin/dashboard"
-        element={
-          <PrivateRoute allowedRoles={["admin"]}>
-            <Dashboard />
-          </PrivateRoute>
-        }
-      />
+      >
+        <Route
+          path="/admin"
+          element={
+            <PrivateRoute allowedRoles={["admin"]}>
+              <Admin />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/admin/account"
+          element={
+            <PrivateRoute allowedRoles={["admin"]}>
+              <AccountManagement />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/admin/supplier"
+          element={
+            <PrivateRoute allowedRoles={["admin"]}>
+              <Supplier />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/admin/dashboard"
+          element={
+            <PrivateRoute allowedRoles={["admin"]}>
+              <Dashboard />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/admin/vehicle"
+          element={
+            <PrivateRoute allowedRoles={["admin"]}>
+              <Vehicle />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/admin/parking"
+          element={
+            <PrivateRoute allowedRoles={["admin"]}>
+              <Parking />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/admin/audit-log"
+          element={
+            <PrivateRoute allowedRoles={["admin"]}>
+              <AuditLog />
+            </PrivateRoute>
+          }
+        />
+      </Route>
+
       <Route path="/404" element={<NotFound />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
