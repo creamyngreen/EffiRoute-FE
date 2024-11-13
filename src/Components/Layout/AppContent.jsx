@@ -25,6 +25,9 @@ const AppContent = ({ firstRenderRef }) => {
     "/planner/account",
     "/manager/account",
     "/admin/dashboard",
+    "/admin/vehicle",
+    "/admin/parking",
+    "/admin/audit-log",
   ];
 
   useEffect(() => {

@@ -5,7 +5,7 @@ import { useRef } from "react";
 import AppContent from "./Components/Layout/AppContent";
 
 function App() {
-  const isLoading = useSelector((state) => state.account.isLoading);
+  // const isLoading = useSelector((state) => state.account.isLoading);
   const firstRenderRef = useRef(true);
 
   const style = {
@@ -18,13 +18,13 @@ function App() {
   return (
     <>
       <Router>
-        {isLoading ? (
+        {/* {isLoading ? (
           <div style={style}>
             <HashLoader color={"#fd7e14"} loading={true} size={150} />
           </div>
-        ) : (
+        ) : ( */}
           <AppContent firstRenderRef={firstRenderRef} />
-        )}
+        {/* )} */}
       </Router>
     </>
   );

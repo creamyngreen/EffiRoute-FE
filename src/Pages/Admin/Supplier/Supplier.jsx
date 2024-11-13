@@ -1,9 +1,28 @@
 import React, { useState } from "react";
-import NavBarAdmin from "../../../Components/NavBarAdmin/NavBarAdmin";
-import SideBarAdmin from "../../../Components/SidebarAdmin/SidebarAdmin";
+import { Table, Empty, Modal, Form, Input, notification } from "antd";
+import { RiExpandUpDownFill, RiDeleteBack2Line } from "react-icons/ri";
+
 import filter from "../../../assets/Admin/filter.png";
 import arrowdown from "../../../assets/Admin/arrowdown.png";
 import reset from "../../../assets/Admin/reset.png";
+
+const CustomEmpty = () => (
+  <div className="flex flex-col items-center justify-center py-8">
+    <Empty
+      image={Empty.PRESENTED_IMAGE_SIMPLE}
+      description={
+        <div className="text-center">
+          <p className="text-gray-500 text-base mb-2">
+            No suppliers found
+          </p>
+          <p className="text-gray-400 text-sm">
+            Please add a new supplier to get started.
+          </p>
+        </div>
+      }
+    />
+  </div>
+);
 
 const SupplierManagement = () => {
   const [suppliers, setSuppliers] = useState([
@@ -59,12 +78,10 @@ const SupplierManagement = () => {
     capacity: "",
   });
   const [editSupplierId, setEditSupplierId] = useState(null);
-  const [filterRole, setFilterRole] = useState("");
-  const [filterDate, setFilterDate] = useState("");
-  const [showDateDropdown, setShowDateDropdown] = useState(false);
-  const [showRoleDropdown, setShowRoleDropdown] = useState(false);
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [modalTitle, setModalTitle] = useState("Create Supplier");
 
-  // Function to open modal for creating a new supplier
+
   const handleCreate = () => {
     setFormData({
       name: "",
@@ -81,479 +98,392 @@ const SupplierManagement = () => {
       capacity: "",
     });
     setEditSupplierId(null);
+    setModalTitle("Create Supplier");
     setIsModalOpen(true);
   };
 
-  // Function to handle form submission
-  const handleSubmit = (e) => {
-    e.preventDefault();
+
+  const handleSubmit = (values) => {
     const now = new Date();
-    const newSupplier = {
-      id: editSupplierId || Date.now(),
-      ...formData,
-      created_at: editSupplierId
-        ? suppliers.find((supplier) => supplier.id === editSupplierId)
-            .created_at
-        : now,
-      updated_at: now,
-    };
+    const updatedSuppliers = selectedRowKeys.length > 0
+      ? suppliers.map((supplier) => {
+          if (selectedRowKeys.includes(supplier.id)) {
+            return {
+              ...supplier,
+              ...values,
+              updated_at: now,
+            };
+          }
+          return supplier;
+        })
+      : suppliers;
 
-    // Update existing supplier or add a new one
-    if (editSupplierId) {
-      setSuppliers(
-        suppliers.map((supplier) =>
-          supplier.id === editSupplierId ? newSupplier : supplier
-        )
-      );
-    } else {
-      setSuppliers([...suppliers, newSupplier]);
-    }
-
+    setSuppliers(updatedSuppliers);
     setIsModalOpen(false);
     setEditSupplierId(null);
   };
 
-  // Function to populate the form with existing supplier data for editing
-  const handleEdit = (supplier) => {
+  const handleEdit = () => {
+    if (selectedRowKeys.length === 0) {
+      notification.warning({
+        message: 'No Suppliers Selected',
+        description: 'Please select at least one supplier to edit.',
+        placement: 'topRight',
+      });
+      return;
+    }
+
+    const supplierToEdit = suppliers.find((supplier) => supplier.id === selectedRowKeys[0]);
     setFormData({
-      name: supplier.name,
-      email: supplier.email,
-      phone: supplier.phone,
-      address: supplier.address,
-      representative: supplier.representative,
-      sector: supplier.sector,
-      product_service: supplier.product_service,
-      market: supplier.market,
-      tax: supplier.tax,
-      year: supplier.year,
-      scale: supplier.scale,
-      capacity: supplier.capacity,
+      name: supplierToEdit.name,
+      email: supplierToEdit.email,
+      phone: supplierToEdit.phone,
+      address: supplierToEdit.address,
+      representative: supplierToEdit.representative,
+      sector: supplierToEdit.sector,
+      product_service: supplierToEdit.product_service,
+      market: supplierToEdit.market,
+      tax: supplierToEdit.tax,
+      year: supplierToEdit.year,
+      scale: supplierToEdit.scale,
+      capacity: supplierToEdit.capacity,
     });
-    setEditSupplierId(supplier.id);
+    setEditSupplierId(supplierToEdit.id);
+    setModalTitle(`Edit Supplier (ID: ${supplierToEdit.id})`);
     setIsModalOpen(true);
   };
 
-  // Function to delete a supplier
-  const handleDelete = (id) => {
-    setSuppliers(suppliers.filter((supplier) => supplier.id !== id));
+  const handleDelete = () => {
+    if (selectedRowKeys.length === 0) {
+      notification.warning({
+        message: 'No Suppliers Selected',
+        description: 'Please select at least one supplier to delete.',
+        placement: 'topRight',
+      });
+      return;
+    }
+    
+    // Remove all selected suppliers
+    setSuppliers(suppliers.filter((supplier) => !selectedRowKeys.includes(supplier.id)));
   };
 
-  // Function to reset filters
-  const handleResetFilters = () => {
-    setFilterRole("");
-    setFilterDate("");
+  // Define your columns for the Ant Design table
+  const columns = [
+    {
+      title: "ID",
+      dataIndex: "id",
+      sorter: (a, b) => a.id - b.id,
+    },
+    {
+      title: "Name",
+      dataIndex: "name",
+      sorter: (a, b) => a.name.localeCompare(b.name),
+    },
+    {
+      title: "Address",
+      dataIndex: "address",
+      sorter: (a, b) => a.address.localeCompare(b.address),
+    },
+    {
+      title: "Phone",
+      dataIndex: "phone",
+      sorter: (a, b) => a.phone.localeCompare(b.phone),
+    },
+    {
+      title: "Representative",
+      dataIndex: "representative",
+      sorter: (a, b) => a.representative.localeCompare(b.representative),
+    },
+    {
+      title: "Email",
+      dataIndex: "email",
+      sorter: (a, b) => a.email.localeCompare(b.email),
+    },
+    {
+      title: "Sector",
+      dataIndex: "sector",
+      sorter: (a, b) => a.sector.localeCompare(b.sector),
+    },
+    {
+      title: "Product & Service",
+      dataIndex: "product_service",
+      sorter: (a, b) => a.product_service.localeCompare(b.product_service),
+    },
+    {
+      title: "Market",
+      dataIndex: "market",
+      sorter: (a, b) => a.market.localeCompare(b.market),
+    },
+    {
+      title: "Tax",
+      dataIndex: "tax",
+      sorter: (a, b) => a.tax.localeCompare(b.tax),
+    },
+    {
+      title: "Year",
+      dataIndex: "year",
+      sorter: (a, b) => a.year - b.year,
+    },
+    {
+      title: "Scale",
+      dataIndex: "scale",
+      sorter: (a, b) => a.scale.localeCompare(b.scale),
+    },
+    {
+      title: "Capacity",
+      dataIndex: "capacity",
+      sorter: (a, b) => a.capacity.localeCompare(b.capacity),
+    },
+  ];
+
+  // Transform suppliers data for table display
+  const tableData = suppliers.map((supplier) => ({
+    key: supplier.id,
+    ...supplier,
+  }));
+
+  // Row selection configuration
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (selectedRowKeys) => {
+      setSelectedRowKeys(selectedRowKeys);
+    },
   };
 
-  // Filtering suppliers based on selected role and date
-  const filteredSuppliers = suppliers.filter((supplier) => {
-    const matchesRole = filterRole ? supplier.role === filterRole : true;
-    const matchesDate = filterDate
-      ? supplier.created_at.toLocaleDateString() ===
-        new Date(filterDate).toLocaleDateString()
-      : true;
-    return matchesRole && matchesDate;
-  });
+ 
+  const handleRowsChange = (e) => {
+    
+  };
 
   return (
     <div className="flex h-screen font-nunito">
-      <SideBarAdmin />
       <div className="flex-1 flex flex-col">
-        <NavBarAdmin />
-        <div className="p-6 bg-gray-100 flex-grow">
-          <h1 className="text-3xl font-bold mb-4">Supplier Management</h1>
-
-          {/* Filter Section */}
-          <div className="flex items-center w-full mb-4">
-            <div className="flex items-center">
-              <img src={filter} alt="Filter" className="w-5 h-5 mr-2" />
-              <span className="mx-10 font-bold">Filter By</span>
-
-              {/* Date Filter */}
-              <div className="relative flex items-center mx-10">
-                <span className="font-bold mr-5">Date</span>
-                <img
-                  src={arrowdown}
-                  alt="Date Filter"
-                  className="cursor-pointer w-5 h-5 mr-1"
-                  onClick={() => setShowDateDropdown(!showDateDropdown)}
-                />
-                {showDateDropdown && (
-                  <input
-                    type="date"
-                    value={filterDate}
-                    onChange={(e) => setFilterDate(e.target.value)}
-                    className="absolute top-10 left-0 p-1 border border-gray-300 rounded"
-                  />
-                )}
+        <div className="p-6flex-grow">
+          {/* Suppliers Summary and Actions */}
+          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center mt-10 mb-5 text-gray-600 gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+              <span>Selected Suppliers: {selectedRowKeys.length}</span>
+              <span className="text-gray-400">|</span>
+              <span>Total Suppliers: {suppliers.length || 0}</span>
+              <div className="relative inline-flex items-center">
+                <select
+                  className="border border-gray-300 text-sm px-4 py-2 pr-8 rounded-md focus:outline-none appearance-none"
+                  onChange={handleRowsChange} 
+                >
+                  <option value={10}>View 10 at a time</option>
+                  <option value={20}>View 20 at a time</option>
+                  <option value={30}>View 30 at a time</option>
+                  <option value={40}>View 40 at a time</option>
+                  <option value={50}>View 50 at a time</option>
+                </select>
+                <RiExpandUpDownFill className="absolute right-2 pointer-events-none text-gray-500" />
               </div>
-
-              {/* Role Filter */}
-              <div className="relative flex items-center mx-10">
-                <span className="font-bold mr-5">Role</span>
-                <img
-                  src={arrowdown}
-                  alt="Role Filter"
-                  className="cursor-pointer w-5 h-5 mr-1"
-                  onClick={() => setShowRoleDropdown(!showRoleDropdown)}
-                />
-                {showRoleDropdown && (
-                  <select
-                    value={filterRole}
-                    onChange={(e) => setFilterRole(e.target.value)}
-                    className="absolute top-10 left-0 p-1 border border-gray-300 rounded"
-                  >
-                    <option value="">All</option>
-                    <option value="Distributor">Distributor</option>
-                    <option value="Vendor">Vendor</option>
-                  </select>
-                )}
-              </div>
-
-              <button
-                onClick={handleResetFilters}
-                className="flex items-center text-red-600 p-2 font-semibold rounded"
-              >
-                <img src={reset} alt="Reset Filter" className="mr-1 w-4 h-4" />
-                Reset Filter
-              </button>
             </div>
 
-            <button
-              onClick={handleCreate}
-              className="bg-blue-500 text-white p-2 rounded mb-4 ml-auto"
-            >
-              Create Supplier
-            </button>
+            <div className="flex flex-wrap gap-2">
+              <button
+                className="flex-1 sm:flex-none bg-orange-50 text-primary font-bold px-2 py-1 sm:px-4 sm:py-2 rounded-md hover:bg-primary hover:text-white text-sm sm:text-base"
+                onClick={handleCreate}
+              >
+                Add Supplier
+              </button>
+              <button
+                className="bg-white flex items-center text-[#8F96A9] border font-bold border-gray-300 px-2 py-1 sm:px-4 sm:py-2 rounded-md hover:bg-gray-200 text-sm sm:text-base"
+                onClick={handleDelete} 
+              >
+                <RiDeleteBack2Line className="mr-1 sm:mr-2 text-sm sm:text-base" />
+                Withdraw Supplier
+              </button>
+              <button
+                className="bg-white text-[#8F96A9] border font-bold border-gray-300 px-2 py-1 sm:px-4 sm:py-2 rounded-md hover:bg-gray-200 text-sm sm:text-base"
+                onClick={handleEdit} 
+              >
+                Edit Supplier Information
+              </button>
+            </div>
           </div>
 
           {/* Suppliers Table */}
           <div className="overflow-x-auto mb-6">
-            <table className="min-w-full bg-white border-collapse border shadow-md rounded-lg">
-              <thead>
-                <tr className="bg-gray-100 uppercase text-base">
-                  <th className="border p-2 text-left font-semibold text-gray-700 whitespace-nowrap">
-                    ID
-                  </th>
-                  <th className="border p-2 text-left font-semibold text-gray-700 whitespace-nowrap">
-                    Name
-                  </th>
-                  <th className="border p-2 text-left font-semibold text-gray-700 whitespace-nowrap">
-                    Address
-                  </th>
-                  <th className="border p-2 text-left font-semibold text-gray-700 whitespace-nowrap">
-                    Phone
-                  </th>
-                  <th className="border p-2 text-left font-semibold text-gray-700 whitespace-nowrap">
-                    Representative
-                  </th>
-                  <th className="border p-2 text-left font-semibold text-gray-700 whitespace-nowrap">
-                    Email
-                  </th>
-                  <th className="border p-2 text-left font-semibold text-gray-700 whitespace-nowrap">
-                    Sector
-                  </th>
-                  <th className="border p-2 text-left font-semibold text-gray-700 whitespace-nowrap">
-                    Product & Service
-                  </th>
-                  <th className="border p-2 text-left font-semibold text-gray-700 whitespace-nowrap">
-                    Market
-                  </th>
-                  <th className="border p-2 text-left font-semibold text-gray-700 whitespace-nowrap">
-                    Tax
-                  </th>
-                  <th className="border p-2 text-left font-semibold text-gray-700 whitespace-nowrap">
-                    Year
-                  </th>
-                  <th className="border p-2 text-left font-semibold text-gray-700 whitespace-nowrap">
-                    Scale
-                  </th>
-                  <th className="border p-2 text-left font-semibold text-gray-700 whitespace-nowrap">
-                    Capacity
-                  </th>
-                  <th className="border p-2 text-left font-semibold text-gray-700 whitespace-nowrap">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="text-gray-600 text-base font-light">
-                {filteredSuppliers.map((supplier) => (
-                  <tr key={supplier.id} className="hover:bg-gray-50">
-                    <td className="border p-2 text-gray-800 whitespace-nowrap">
-                      {supplier.id}
-                    </td>
-                    <td className="border p-2 text-gray-800 whitespace-nowrap">
-                      {supplier.name}
-                    </td>
-                    <td className="border p-2 text-gray-800 whitespace-nowrap">
-                      {supplier.address}
-                    </td>
-                    <td className="border p-2 text-gray-800 whitespace-nowrap">
-                      {supplier.phone}
-                    </td>
-                    <td className="border p-2 text-gray-800 whitespace-nowrap">
-                      {supplier.representative}
-                    </td>
-                    <td className="border p-2 text-gray-800 whitespace-nowrap">
-                      {supplier.email}
-                    </td>
-                    <td className="border p-2 text-gray-800 whitespace-nowrap">
-                      {supplier.sector}
-                    </td>
-                    <td className="border p-2 text-gray-800 whitespace-nowrap">
-                      {supplier.product_service}
-                    </td>
-                    <td className="border p-2 text-gray-800 whitespace-nowrap">
-                      {supplier.market}
-                    </td>
-                    <td className="border p-2 text-gray-800 whitespace-nowrap">
-                      {supplier.tax}
-                    </td>
-                    <td className="border p-2 text-gray-800 whitespace-nowrap">
-                      {supplier.year}
-                    </td>
-                    <td className="border p-2 text-gray-800 whitespace-nowrap">
-                      {supplier.scale}
-                    </td>
-                    <td className="border p-2 text-gray-800 whitespace-nowrap">
-                      {supplier.capacity}
-                    </td>
-                    <td className="border p-2 text-center whitespace-nowrap">
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => handleEdit(supplier)}
-                          className="text-blue-500 hover:text-blue-700 font-semibold"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDelete(supplier.id)}
-                          className="text-red-500 hover:text-red-700 font-semibold"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <Table
+              columns={columns}
+              dataSource={tableData}
+              pagination={{ pageSize: 10 }}
+              rowKey="id"
+              rowSelection={rowSelection} 
+              locale={{ emptyText: <CustomEmpty /> }} 
+            />
           </div>
 
-          {/* Modal for creating and editing suppliers */}
-          {isModalOpen && (
-            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-              <div className="bg-white p-6 rounded-lg shadow-lg w-2/3">
-                <h2 className="text-2xl font-bold mb-4">
-                  {editSupplierId ? "Edit Supplier" : "Create Supplier"}
-                </h2>
-                <form onSubmit={handleSubmit}>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="mb-4">
-                      <label className="block mb-2" htmlFor="name">
-                        Name
-                      </label>
-                      <input
-                        type="text"
-                        id="name"
-                        value={formData.name}
-                        onChange={(e) =>
-                          setFormData({ ...formData, name: e.target.value })
-                        }
-                        className="w-full border border-gray-300 rounded p-2"
-                        required
-                      />
-                    </div>
-                    <div className="mb-4">
-                      <label className="block mb-2" htmlFor="email">
-                        Email
-                      </label>
-                      <input
-                        type="email"
-                        id="email"
-                        value={formData.email}
-                        onChange={(e) =>
-                          setFormData({ ...formData, email: e.target.value })
-                        }
-                        className="w-full border border-gray-300 rounded p-2"
-                        required
-                      />
-                    </div>
-                    <div className="mb-4">
-                      <label className="block mb-2" htmlFor="phone">
-                        Phone
-                      </label>
-                      <input
-                        type="tel"
-                        id="phone"
-                        value={formData.phone}
-                        onChange={(e) =>
-                          setFormData({ ...formData, phone: e.target.value })
-                        }
-                        className="w-full border border-gray-300 rounded p-2"
-                        required
-                      />
-                    </div>
-                    <div className="mb-4">
-                      <label className="block mb-2" htmlFor="address">
-                        Address
-                      </label>
-                      <input
-                        type="text"
-                        id="address"
-                        value={formData.address}
-                        onChange={(e) =>
-                          setFormData({ ...formData, address: e.target.value })
-                        }
-                        className="w-full border border-gray-300 rounded p-2"
-                        required
-                      />
-                    </div>
-                    <div className="mb-4">
-                      <label className="block mb-2" htmlFor="representative">
-                        Representative
-                      </label>
-                      <input
-                        type="text"
-                        id="representative"
-                        value={formData.representative}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            representative: e.target.value,
-                          })
-                        }
-                        className="w-full border border-gray-300 rounded p-2"
-                        required
-                      />
-                    </div>
-                    <div className="mb-4">
-                      <label className="block mb-2" htmlFor="sector">
-                        Sector
-                      </label>
-                      <input
-                        type="text"
-                        id="sector"
-                        value={formData.sector}
-                        onChange={(e) =>
-                          setFormData({ ...formData, sector: e.target.value })
-                        }
-                        className="w-full border border-gray-300 rounded p-2"
-                        required
-                      />
-                    </div>
-                    <div className="mb-4">
-                      <label className="block mb-2" htmlFor="product_service">
-                        Product & Service
-                      </label>
-                      <input
-                        type="text"
-                        id="product_service"
-                        value={formData.product_service}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            product_service: e.target.value,
-                          })
-                        }
-                        className="w-full border border-gray-300 rounded p-2"
-                        required
-                      />
-                    </div>
-                    <div className="mb-4">
-                      <label className="block mb-2" htmlFor="market">
-                        Market
-                      </label>
-                      <input
-                        type="text"
-                        id="market"
-                        value={formData.market}
-                        onChange={(e) =>
-                          setFormData({ ...formData, market: e.target.value })
-                        }
-                        className="w-full border border-gray-300 rounded p-2"
-                        required
-                      />
-                    </div>
-                    <div className="mb-4">
-                      <label className="block mb-2" htmlFor="tax">
-                        Tax
-                      </label>
-                      <input
-                        type="text"
-                        id="tax"
-                        value={formData.tax}
-                        onChange={(e) =>
-                          setFormData({ ...formData, tax: e.target.value })
-                        }
-                        className="w-full border border-gray-300 rounded p-2"
-                        required
-                      />
-                    </div>
-                    <div className="mb-4">
-                      <label className="block mb-2" htmlFor="year">
-                        Year
-                      </label>
-                      <input
-                        type="number"
-                        id="year"
-                        value={formData.year}
-                        onChange={(e) =>
-                          setFormData({ ...formData, year: e.target.value })
-                        }
-                        className="w-full border border-gray-300 rounded p-2"
-                        required
-                      />
-                    </div>
-                    <div className="mb-4">
-                      <label className="block mb-2" htmlFor="scale">
-                        Scale
-                      </label>
-                      <input
-                        type="text"
-                        id="scale"
-                        value={formData.scale}
-                        onChange={(e) =>
-                          setFormData({ ...formData, scale: e.target.value })
-                        }
-                        className="w-full border border-gray-300 rounded p-2"
-                        required
-                      />
-                    </div>
-                    <div className="mb-4">
-                      <label className="block mb-2" htmlFor="capacity">
-                        Capacity
-                      </label>
-                      <input
-                        type="text"
-                        id="capacity"
-                        value={formData.capacity}
-                        onChange={(e) =>
-                          setFormData({ ...formData, capacity: e.target.value })
-                        }
-                        className="w-full border border-gray-300 rounded p-2"
-                        required
-                      />
-                    </div>
-                  </div>
-                  <div className="flex justify-end">
-                    <button
-                      type="button"
-                      onClick={() => setIsModalOpen(false)}
-                      className="bg-gray-300 text-gray-700 p-2 rounded mr-2"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className="bg-blue-500 text-white p-2 rounded"
-                    >
-                      {editSupplierId ? "Update Supplier" : "Create Supplier"}
-                    </button>
-                  </div>
-                </form>
+          
+          <Modal
+            title={modalTitle}
+            visible={isModalOpen}
+            onOk={() => handleSubmit(formData)}
+            onCancel={() => setIsModalOpen(false)}
+          >
+            <Form
+              layout="vertical"
+              initialValues={formData}
+              onFinish={handleSubmit}
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Form.Item name="name" label="Name">
+                  <Input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
+                    className="w-full border border-gray-300 rounded p-2"
+                    required
+                  />
+                </Form.Item>
+                <Form.Item name="email" label="Email">
+                  <Input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) =>
+                      setFormData({ ...formData, email: e.target.value })
+                    }
+                    className="w-full border border-gray-300 rounded p-2"
+                    required
+                  />
+                </Form.Item>
+                <Form.Item name="phone" label="Phone">
+                  <Input
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) =>
+                      setFormData({ ...formData, phone: e.target.value })
+                    }
+                    className="w-full border border-gray-300 rounded p-2"
+                    required
+                  />
+                </Form.Item>
+                <Form.Item name="address" label="Address">
+                  <Input
+                    type="text"
+                    value={formData.address}
+                    onChange={(e) =>
+                      setFormData({ ...formData, address: e.target.value })
+                    }
+                    className="w-full border border-gray-300 rounded p-2"
+                    required
+                  />
+                </Form.Item>
+                <Form.Item name="representative" label="Representative">
+                  <Input
+                    type="text"
+                    value={formData.representative}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        representative: e.target.value,
+                      })
+                    }
+                    className="w-full border border-gray-300 rounded p-2"
+                    required
+                  />
+                </Form.Item>
+                <Form.Item name="sector" label="Sector">
+                  <Input
+                    type="text"
+                    value={formData.sector}
+                    onChange={(e) =>
+                      setFormData({ ...formData, sector: e.target.value })
+                    }
+                    className="w-full border border-gray-300 rounded p-2"
+                    required
+                  />
+                </Form.Item>
+                <Form.Item name="product_service" label="Product & Service">
+                  <Input
+                    type="text"
+                    value={formData.product_service}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        product_service: e.target.value,
+                      })
+                    }
+                    className="w-full border border-gray-300 rounded p-2"
+                    required
+                  />
+                </Form.Item>
+                <Form.Item name="market" label="Market">
+                  <Input
+                    type="text"
+                    value={formData.market}
+                    onChange={(e) =>
+                      setFormData({ ...formData, market: e.target.value })
+                    }
+                    className="w-full border border-gray-300 rounded p-2"
+                    required
+                  />
+                </Form.Item>
+                <Form.Item name="tax" label="Tax">
+                  <Input
+                    type="text"
+                    value={formData.tax}
+                    onChange={(e) =>
+                      setFormData({ ...formData, tax: e.target.value })
+                    }
+                    className="w-full border border-gray-300 rounded p-2"
+                    required
+                  />
+                </Form.Item>
+                <Form.Item name="year" label="Year">
+                  <Input
+                    type="number"
+                    value={formData.year}
+                    onChange={(e) =>
+                      setFormData({ ...formData, year: e.target.value })
+                    }
+                    className="w-full border border-gray-300 rounded p-2"
+                    required
+                  />
+                </Form.Item>
+                <Form.Item name="scale" label="Scale">
+                  <Input
+                    type="text"
+                    value={formData.scale}
+                    onChange={(e) =>
+                      setFormData({ ...formData, scale: e.target.value })
+                    }
+                    className="w-full border border-gray-300 rounded p-2"
+                    required
+                  />
+                </Form.Item>
+                <Form.Item name="capacity" label="Capacity">
+                  <Input
+                    type="text"
+                    value={formData.capacity}
+                    onChange={(e) =>
+                      setFormData({ ...formData, capacity: e.target.value })
+                    }
+                    className="w-full border border-gray-300 rounded p-2"
+                    required
+                  />
+                </Form.Item>
               </div>
-            </div>
-          )}
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="bg-gray-300 text-gray-700 p-2 rounded mr-2"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="bg-blue-500 text-white p-2 rounded"
+                >
+                  {editSupplierId ? "Update Supplier" : "Create Supplier"}
+                </button>
+              </div>
+            </Form>
+          </Modal>
         </div>
       </div>
     </div>
