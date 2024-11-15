@@ -14,7 +14,7 @@ export const SocketProvider = ({ children }) => {
       socket.on("connect", () => {
         console.log("Connected to socket server");
         // Join room based on user role
-        const role = user.roleWithPermission?.description.toLowerCase();
+        const role = user.roleWithPermission?.name;
         socket.emit("joinRoom", role);
       });
     }

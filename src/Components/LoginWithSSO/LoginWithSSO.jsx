@@ -22,7 +22,7 @@ const LoginWithSSO = () => {
   }, []);
   useEffect(() => {
     if (userInfo && userInfo.access_token) {
-      const role = userInfo.roleWithPermission?.name?.toLowerCase();
+      const role = userInfo.roleWithPermission?.name;
       switch (role) {
         case "admin":
           navigate("/admin");

@@ -28,6 +28,8 @@ const AppContent = ({ firstRenderRef }) => {
     "/admin/vehicle",
     "/admin/parking",
     "/admin/audit-log",
+    "/admin/permission",
+    "/admin/role",
   ];
 
   useEffect(() => {

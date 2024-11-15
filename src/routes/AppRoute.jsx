@@ -22,6 +22,8 @@ import AdminLayout from "../Components/Layout/AdminLayout";
 import Vehicle from "../Pages/Admin/Vehicle/Vehicle";
 import Parking from "../Pages/Admin/Parking/Parking";
 import AuditLog from "../Pages/Admin/AuditLog/AuditLog";
+import Permission from "../Pages/Admin/Permission/Permission";
+import Role from "../Pages/Admin/Role/Role";
 const AppRoute = () => {
   return (
     <Routes>
@@ -119,6 +121,22 @@ const AppRoute = () => {
           element={
             <PrivateRoute allowedRoles={["admin"]}>
               <AuditLog />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/admin/permission"
+          element={
+            <PrivateRoute allowedRoles={["admin"]}>
+              <Permission />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/admin/role"
+          element={
+            <PrivateRoute allowedRoles={["admin"]}>
+              <Role />
             </PrivateRoute>
           }
         />
