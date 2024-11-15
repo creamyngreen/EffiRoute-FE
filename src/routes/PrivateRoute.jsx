@@ -4,7 +4,7 @@ import { Navigate } from "react-router-dom";
 
 const PrivateRoute = ({ children, allowedRoles = [] }) => {
   const user = useSelector((state) => state.account.userInfo);
-  const userRole = user?.roleWithPermission?.name?.toLowerCase();
+  const userRole = user?.roleWithPermission?.name;
 
   if (!user || !user.access_token) {
     return null;

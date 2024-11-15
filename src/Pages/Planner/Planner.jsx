@@ -28,7 +28,7 @@ import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import BouncyText from "../../Components/BouncingText/BouncingText";
 import { useNavigate } from "react-router-dom";
-
+import { searchUsers } from "../../redux/action/userAction";
 
 dayjs.extend(customParseFormat);
 const getStatusTag = (status) => {
@@ -177,6 +177,23 @@ const Planner = () => {
   const [optimizeProgress, setOptimizeProgress] = useState(0);
   const [isOptimizeComplete, setIsOptimizeComplete] = useState(false);
   const navigate = useNavigate();
+  const [managerId, setManagerId] = useState(null);
+
+  useEffect(() => {
+    const fetchManager = async () => {
+      try {
+        const result = await dispatch(searchUsers("manager"));
+        const manager = result.find((user) => user.role?.id === 3);
+        if (manager) {
+          setManagerId(manager.id);
+        }
+      } catch (error) {
+        console.error("Failed to fetch manager:", error);
+      }
+    };
+
+    fetchManager();
+  }, [dispatch]);
 
   // Transform data for table display
   const tableData = useMemo(() => {
@@ -188,7 +205,7 @@ const Planner = () => {
     const filteredData =
       activeTab === "all"
         ? plans.data
-        : plans.data.filter((plan) => plan.status.toLowerCase() === activeTab);
+        : plans.data.filter((plan) => plan.status === activeTab);
 
     return filteredData.map((plan) => ({
       key: plan.id,
@@ -295,11 +312,11 @@ const Planner = () => {
     try {
       const planData = {
         plannerId: user.user_id,
-        managerId: "3",
+        managerId: managerId,
         deadline: deadlineInput,
         destination: destination,
         priority: modalPriorityInput === "High" ? 1 : 0,
-        demand: demandValue, // Use the parsed float value
+        demand: demandValue,
       };
       await dispatch(doAddPlan(planData));
 
@@ -477,18 +494,16 @@ const Planner = () => {
       setIsOptimizeComplete(true);
 
       // Close modal
-      setTimeout(() => {
-        setIsOptimizeModalVisible(false);
-        notification.success({
-          message: "Optimization Success",
-          description:
-            "You will be navigated to optimization page in 2 seconds",
-          placement: "topRight",
-          onClose: () => {
-            navigate("/optimization");
-          },
-        });
-      }, 2000);
+
+      setIsOptimizeModalVisible(false);
+      notification.success({
+        message: "Optimization Success",
+        description: "You will be navigated to optimization page in 2 seconds",
+        placement: "topRight",
+        onClose: () => {
+          navigate("/optimization");
+        },
+      });
     } catch (error) {
       setIsOptimizeModalVisible(false);
       notification.error({
@@ -719,12 +734,12 @@ const Planner = () => {
               );
             }
           }
-          const priorityString = row[3]?.toString().trim().toLowerCase();
+          const priorityString = row[3]?.toString().trim();
           const priority = priorityString === "high" ? 1 : 0;
 
           return {
             plannerId: user.user_id,
-            managerId: "3",
+            managerId: managerId,
             deadline: deadline,
             demand: row[1],
             destination: row[2],

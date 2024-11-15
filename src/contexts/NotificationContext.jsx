@@ -26,7 +26,7 @@ export const NotificationProvider = ({ children }) => {
 
   useEffect(() => {
     if (socket && user) {
-      const role = user.roleWithPermission?.description.toLowerCase();
+      const role = user.roleWithPermission?.name;
 
       if (role === "manager") {
         socket.on("highPriorityPlan", (data) => {

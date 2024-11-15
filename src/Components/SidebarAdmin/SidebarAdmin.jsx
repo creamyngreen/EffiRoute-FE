@@ -1,6 +1,11 @@
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
-import { LuLayoutDashboard } from "react-icons/lu";
+import {
+  LuLayoutDashboard,
+  LuParkingCircle,
+  LuFileKey,
+  LuUsers,
+} from "react-icons/lu";
 import {
   MdManageAccounts,
   MdSupervisorAccount,
@@ -12,7 +17,6 @@ import { Button, Layout, Menu, theme, Breadcrumb } from "antd";
 import { Link, useLocation, useNavigate, Outlet } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { LuParkingCircle } from "react-icons/lu";
 import "./SidebarAdmin.css";
 import { FaUser } from "react-icons/fa";
 import noti from "../../assets/Planner/noti.png";
@@ -39,17 +43,17 @@ const Sidebar = () => {
     "/admin/vehicle": "Vehicle",
     "/admin/parking": "Parking",
     "/admin/audit-log": "Audit Log",
+    "/admin/permission": "Permission",
+    "/admin/role": "Role",
   };
 
   // Generate breadcrumb items based on location
   const pathSnippets = location.pathname.split("/").filter((i) => i);
   const extraBreadcrumbItems = pathSnippets.map((_, index) => {
     const url = `/${pathSnippets.slice(0, index + 1).join("/")}`;
-    const routeName = breadcrumbNameMap[url] || breadcrumbNameMap["/admin/orders/:id"];
-    
-    const breadcrumbLabel = routeName && routeName.includes(":id")
-      ? routeName.replace(":id", id)
-      : routeName || ""; 
+    const routeName = breadcrumbNameMap[url];
+
+    const breadcrumbLabel = routeName;
 
     return (
       <Breadcrumb.Item key={url}>
@@ -60,15 +64,13 @@ const Sidebar = () => {
 
   const breadcrumbItems = [].concat(extraBreadcrumbItems);
 
-
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
   };
 
-
   const handleLogout = () => {
     console.log("Logging out...");
-    navigate("/"); 
+    navigate("/");
   };
 
   return (
@@ -80,10 +82,12 @@ const Sidebar = () => {
         style={{ background: "white" }}
       >
         <div className="logo">
-          <img 
-            src={Logo} 
-            className={`h-${collapsed ? '6' : '8'} lg:h-${collapsed ? '10' : '14'}`} 
-            alt="Logo" 
+          <img
+            src={Logo}
+            className={`h-${collapsed ? "6" : "8"} lg:h-${
+              collapsed ? "10" : "14"
+            }`}
+            alt="Logo"
           />
         </div>
         <Menu
@@ -102,6 +106,18 @@ const Sidebar = () => {
               icon: <MdManageAccounts />,
               label: "Account",
               onClick: () => navigate("/admin/account"),
+            },
+            {
+              key: "permission",
+              icon: <LuFileKey />,
+              label: "Permission",
+              onClick: () => navigate("/admin/permission"),
+            },
+            {
+              key: "role",
+              icon: <LuUsers />,
+              label: "Role",
+              onClick: () => navigate("/admin/role"),
             },
             {
               key: "supplier",
@@ -152,7 +168,7 @@ const Sidebar = () => {
                 className="relative mr-5 inline-flex items-center p-2 text-sm font-medium text-center text-white bg-primary rounded-lg hover:bg-orange-600 focus:ring-2 focus:outline-none focus:ring-orange-500"
               >
                 <img
-                  src={noti} 
+                  src={noti}
                   alt="Notifications"
                   className="w-4 h-4 filter invert contrast-200 brightness-200"
                 />
@@ -168,8 +184,8 @@ const Sidebar = () => {
                   <button
                     type="button"
                     className="flex items-center text-sm bg-orange-50 justify-center rounded-md md:me-0 h-10 focus:ring-4 focus:ring-gray-300"
-                    onClick={toggleDropdown} 
-                    aria-expanded={isDropdownOpen} 
+                    onClick={toggleDropdown}
+                    aria-expanded={isDropdownOpen}
                   >
                     <div className="flex items-center justify-center p-5">
                       <div className="flex items-center justify-center w-7 h-7 bg-primary rounded-full">

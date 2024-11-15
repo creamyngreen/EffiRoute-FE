@@ -94,21 +94,6 @@ function NavBarManager() {
         {/* Desktop User Actions */}
         <div className="hidden md:flex items-center md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
           <NotificationDropdown />
-          {/* Notification Button for Desktop */}
-          {/* <button
-            type="button"
-            className="relative mr-5 inline-flex items-center p-3 text-sm font-medium text-center text-white bg-primary rounded-lg hover:bg-orange-600 focus:ring-2 focus:outline-none focus:ring-orange-500"
-          >
-            <img
-              src={noti}
-              alt="Notifications"
-              className="w-4 h-4 filter invert contrast-200 brightness-200"
-            />
-            <span className="sr-only">Notifications</span>
-            <div className="absolute inline-flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-secondary border-2 border-white rounded-full -top-2 -end-2">
-              5
-            </div>
-          </button> */}
 
           {/* User Profile Button */}
           {user && (

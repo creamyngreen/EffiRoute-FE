@@ -1,6 +1,16 @@
-import React, { useState } from "react";
-import { Table, Empty, Button, notification, Modal, Form, Input } from "antd";
-import { RiDeleteBack2Line, RiExpandUpDownFill } from "react-icons/ri";
+import { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Table, Empty, Modal, Form, Input, notification } from "antd";
+import { RiDeleteBack2Line } from "react-icons/ri";
+import { SearchOutlined } from "@ant-design/icons";
+import {
+  fetchParkings,
+  createParking,
+  updateParking,
+  deleteParking,
+} from "../../../redux/action/parkingAction";
+import { debounce } from "lodash";
+
 const CustomEmpty = () => (
   <div className="flex flex-col items-center justify-center py-8">
     <Empty
@@ -20,162 +30,198 @@ const CustomEmpty = () => (
 );
 
 const Parking = () => {
-  const [parkingRecords, setParkingRecords] = useState([
-    {
-      id: 1,
-      name: "Parking Lot A",
-      address: "123 Main St",
-    },
-    {
-      id: 2,
-      name: "Parking Lot B",
-      address: "456 Elm St",
-    },
-  ]);
+  const dispatch = useDispatch();
+  const { parkings, loading } = useSelector((state) => state.parking);
 
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState({ name: "", address: "" });
   const [editParkingId, setEditParkingId] = useState(null);
   const [modalTitle, setModalTitle] = useState("Add Parking");
+  const [searchText, setSearchText] = useState("");
+  const [filteredParkings, setFilteredParkings] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [form] = Form.useForm();
 
+  useEffect(() => {
+    dispatch(fetchParkings());
+  }, [dispatch]);
 
-  const columns = [
-    {
-      title: "Name",
-      dataIndex: "name",
-      sorter: (a, b) => a.name.localeCompare(b.name),
-    },
-    {
-      title: "Address",
-      dataIndex: "address",
-      sorter: (a, b) => a.address.localeCompare(b.address),
-    },
-  ];
+  useEffect(() => {
+    if (!searchText) {
+      setFilteredParkings(parkings);
+      return;
+    }
 
+    const searchLower = searchText.toLowerCase();
+    const filtered = parkings.filter(
+      (parking) =>
+        parking.name?.toLowerCase().includes(searchLower) ||
+        parking.address?.toLowerCase().includes(searchLower)
+    );
+    setFilteredParkings(filtered);
+  }, [searchText, parkings]);
 
-  const tableData = parkingRecords.map((record) => ({
-    key: record.id,
-    ...record,
-  }));
+  const handleSearch = debounce((value) => {
+    setSearchText(value);
+  }, 300);
 
   const handleCreate = () => {
-    setFormData({ name: "", address: "" });
+    form.resetFields();
     setEditParkingId(null);
     setModalTitle("Add Parking");
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (values) => {
-    if (editParkingId) {
-     
-      setParkingRecords(parkingRecords.map(record => 
-        record.id === editParkingId ? { ...record, ...values } : record
-      ));
-    } else {
-  
-      const newRecord = { id: Date.now(), ...values };
-      setParkingRecords([...parkingRecords, newRecord]);
+  const handleSubmit = async (values) => {
+    try {
+      if (editParkingId) {
+        await dispatch(updateParking(editParkingId, values));
+        notification.success({
+          message: "Success",
+          description: "Parking updated successfully",
+        });
+      } else {
+        await dispatch(createParking(values));
+        notification.success({
+          message: "Success",
+          description: "Parking created successfully",
+        });
+      }
+      setIsModalOpen(false);
+      form.resetFields();
+    } catch (error) {
+      notification.error({
+        message: "Error",
+        description: error.message || "An error occurred",
+      });
     }
-    setIsModalOpen(false);
-    setEditParkingId(null);
   };
 
   const handleEdit = () => {
-    if (selectedRowKeys.length === 0) {
+    if (selectedRowKeys.length !== 1) {
       notification.warning({
-        message: 'No Parking Records Selected',
-        description: 'Please select at least one parking record to edit.',
-        placement: 'topRight',
+        message: "Please select one parking",
+        description: "You can only edit one parking at a time",
       });
       return;
     }
 
-    const parkingToEdit = parkingRecords.find(record => record.id === selectedRowKeys[0]);
-    setFormData({ name: parkingToEdit.name, address: parkingToEdit.address });
+    const parkingToEdit = parkings.find(
+      (parking) => parking.id === selectedRowKeys[0]
+    );
+    form.setFieldsValue(parkingToEdit);
     setEditParkingId(parkingToEdit.id);
-    setModalTitle(`Edit Parking (ID: ${parkingToEdit.id})`);
+    setModalTitle("Edit Parking");
     setIsModalOpen(true);
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (selectedRowKeys.length === 0) {
       notification.warning({
-        message: 'No Parking Records Selected',
-        description: 'Please select at least one parking record to delete.',
-        placement: 'topRight',
+        message: "No parking selected",
+        description: "Please select at least one parking to delete",
       });
       return;
     }
-    // Logic to delete selected parking records
-    setParkingRecords(parkingRecords.filter((record) => !selectedRowKeys.includes(record.id)));
-    setSelectedRowKeys([]);
+
+    try {
+      await Promise.all(
+        selectedRowKeys.map((id) => dispatch(deleteParking(id)))
+      );
+      notification.success({
+        message: "Success",
+        description: "Parking(s) deleted successfully",
+      });
+      setSelectedRowKeys([]);
+    } catch (error) {
+      notification.error({
+        message: "Error",
+        description: error.message || "An error occurred",
+      });
+    }
   };
 
-  const handleRowsChange = (value) => {
-
-  };
+  const columns = [
+    {
+      title: "Name",
+      dataIndex: "name",
+      sorter: (a, b) => (a.name || "").localeCompare(b.name || ""),
+    },
+    {
+      title: "Address",
+      dataIndex: "address",
+      sorter: (a, b) => (a.address || "").localeCompare(b.address || ""),
+    },
+  ];
 
   return (
     <div className="flex h-screen font-nunito">
       <div className="flex-1 flex flex-col">
         <div className="p-6 flex-grow">
-          {/* Parking Summary and Actions */}
           <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center mt-10 mb-5 text-gray-600 gap-4">
             <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-              <span>Selected Parking: {selectedRowKeys.length}</span>
-              <span className="text-gray-400">|</span>
-              <span>Total Parking: {parkingRecords.length || 0}</span>
-              <div className="relative inline-flex items-center">
-                <select
-                  className="border border-gray-300 text-sm px-4 py-2 pr-8 rounded-md focus:outline-none appearance-none"
-                  onChange={handleRowsChange} 
-                >
-                  <option value={10}>View 10 at a time</option>
-                  <option value={20}>View 20 at a time</option>
-                  <option value={30}>View 30 at a time</option>
-                  <option value={40}>View 40 at a time</option>
-                  <option value={50}>View 50 at a time</option>
-                </select>
-                <RiExpandUpDownFill className="absolute right-2 pointer-events-none text-gray-500" />
+              <span>Selected: {selectedRowKeys.length}</span>
+              <span>Total: {filteredParkings.length} parkings</span>
+              <div className="relative">
+                <Input
+                  placeholder="Search parkings..."
+                  prefix={<SearchOutlined className="text-gray-400" />}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  className="w-64"
+                  allowClear
+                />
               </div>
             </div>
 
             <div className="flex flex-wrap gap-2">
               <button
-                className="flex-1 sm:flex-none bg-orange-50 text-primary font-bold px-2 py-1 sm:px-4 sm:py-2 rounded-md hover:bg-primary hover:text-white text-sm sm:text-base"
+                className="bg-primary text-white px-4 py-2 rounded-md"
                 onClick={handleCreate}
               >
                 Add Parking
               </button>
               <button
-                className="bg-white flex items-center text-[#8F96A9] border font-bold border-gray-300 px-2 py-1 sm:px-4 sm:py-2 rounded-md hover:bg-gray-200 text-sm sm:text-base"
-                onClick={handleDelete} 
+                className="flex items-center justify-center bg-white border px-4 py-2 rounded-md"
+                onClick={handleDelete}
               >
-                <RiDeleteBack2Line className="mr-1 sm:mr-2 text-sm sm:text-base" />
-                Withdraw Parking
+                <RiDeleteBack2Line className="mr-2" />
+                Delete parking
               </button>
               <button
-                className="bg-white text-[#8F96A9] border font-bold border-gray-300 px-2 py-1 sm:px-4 sm:py-2 rounded-md hover:bg-gray-200 text-sm sm:text-base"
-                onClick={handleEdit} 
+                className="bg-white border px-4 py-2 rounded-md"
+                onClick={handleEdit}
               >
-                Edit Parking Information
+                Edit parking information
               </button>
             </div>
           </div>
 
-          {/* Parking Records Table */}
           <div className="overflow-x-auto mb-6">
             <Table
+              loading={loading}
               columns={columns}
-              dataSource={tableData}
-              pagination={{ pageSize: 10 }}
+              dataSource={filteredParkings}
               rowKey="id"
               rowSelection={{
                 selectedRowKeys,
-                onChange: (selectedRowKeys) => {
-                  setSelectedRowKeys(selectedRowKeys);
+                onChange: setSelectedRowKeys,
+              }}
+              pagination={{
+                current: currentPage,
+                pageSize: pageSize,
+                showSizeChanger: true,
+                showTotal: (total, range) =>
+                  `${range[0]}-${range[1]} of ${total} items`,
+                onChange: (page, size) => {
+                  setCurrentPage(page);
+                  setPageSize(size);
                 },
+                onShowSizeChange: (current, size) => {
+                  setPageSize(size);
+                  setCurrentPage(1);
+                },
+                pageSizeOptions: ["10", "20", "50", "100"],
               }}
               locale={{ emptyText: <CustomEmpty /> }}
             />
@@ -183,31 +229,56 @@ const Parking = () => {
 
           <Modal
             title={modalTitle}
-            visible={isModalOpen}
-            onOk={() => handleSubmit(formData)}
-            onCancel={() => setIsModalOpen(false)}
+            open={isModalOpen}
+            onCancel={() => {
+              setIsModalOpen(false);
+              form.resetFields();
+            }}
+            footer={null}
           >
-            <Form
-              layout="vertical"
-              initialValues={formData}
-              onFinish={handleSubmit}
-            >
-              <Form.Item name="name" label="Parking Name">
-                <Input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  required
-                />
+            <Form form={form} layout="vertical" onFinish={handleSubmit}>
+              <Form.Item
+                name="name"
+                label="Parking Name"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please input the parking name!",
+                  },
+                ]}
+              >
+                <Input />
               </Form.Item>
-              <Form.Item name="address" label="Address">
-                <Input
-                  type="text"
-                  value={formData.address}
-                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  required
-                />
+              <Form.Item
+                name="address"
+                label="Address"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please input the address!",
+                  },
+                ]}
+              >
+                <Input />
               </Form.Item>
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+                  onClick={() => {
+                    setIsModalOpen(false);
+                    form.resetFields();
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+                >
+                  {editParkingId ? "Update" : "Create"}
+                </button>
+              </div>
             </Form>
           </Modal>
         </div>
