@@ -8,6 +8,7 @@ import roleReducer from "./roleReducer";
 import vehicleReducer from "./vehicleReducer";
 import parkingReducer from "./parkingReducer";
 import supplierReducer from "./supplierReducer";
+import auditlogReducer from "./auditlogReducer";
 const rootReducer = combineReducers({
   account: accountReducer,
   planner: plannerReducer,
@@ -18,6 +19,7 @@ const rootReducer = combineReducers({
   vehicle: vehicleReducer,
   parking: parkingReducer,
   supplier: supplierReducer,
+  auditlog: auditlogReducer,
 });
 
 export default rootReducer;

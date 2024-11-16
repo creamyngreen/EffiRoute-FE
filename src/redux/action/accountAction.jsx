@@ -87,7 +87,7 @@ export const doGetAccount = () => {
   return async (dispatch) => {
     dispatch({ type: LOGIN_REQUEST });
     try {
-      const res = await axios.get("/account");
+      const res = await axios.get("/users/account");
       if (res && +res.EC === 1) {
         dispatch({ type: LOGIN_SUCCESS, user: res.DT });
       } else {
