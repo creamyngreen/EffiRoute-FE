@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Table, Empty, Modal, Form, Input, notification } from "antd";
 import { RiDeleteBack2Line } from "react-icons/ri";
 import { SearchOutlined } from "@ant-design/icons";
+import { ExclamationCircleOutlined } from "@ant-design/icons";
 import {
   fetchParkings,
   createParking,
@@ -89,7 +90,7 @@ const Parking = () => {
         });
       }
       setIsModalOpen(false);
-      form.resetFields();
+      dispatch(fetchParkings());
     } catch (error) {
       notification.error({
         message: "Error",
@@ -116,7 +117,7 @@ const Parking = () => {
     setIsModalOpen(true);
   };
 
-  const handleDelete = async () => {
+  const showDeleteConfirm = () => {
     if (selectedRowKeys.length === 0) {
       notification.warning({
         message: "No parking selected",
@@ -125,21 +126,31 @@ const Parking = () => {
       return;
     }
 
-    try {
-      await Promise.all(
-        selectedRowKeys.map((id) => dispatch(deleteParking(id)))
-      );
-      notification.success({
-        message: "Success",
-        description: "Parking(s) deleted successfully",
-      });
-      setSelectedRowKeys([]);
-    } catch (error) {
-      notification.error({
-        message: "Error",
-        description: error.message || "An error occurred",
-      });
-    }
+    Modal.confirm({
+      title: "Are you sure you want to delete these parking(s)?",
+      icon: <ExclamationCircleOutlined />,
+      content: `You are about to delete ${selectedRowKeys.length} parking(s). This action cannot be undone.`,
+      okText: "Yes, delete",
+      okType: "danger",
+      cancelText: "No, cancel",
+      onOk: async () => {
+        try {
+          await Promise.all(
+            selectedRowKeys.map((id) => dispatch(deleteParking(id)))
+          );
+          notification.success({
+            message: "Success",
+            description: "Parking(s) deleted successfully",
+          });
+          setSelectedRowKeys([]);
+        } catch (error) {
+          notification.error({
+            message: "Error",
+            description: error.message || "An error occurred",
+          });
+        }
+      },
+    });
   };
 
   const columns = [
@@ -182,8 +193,8 @@ const Parking = () => {
                 Add Parking
               </button>
               <button
-                className="flex items-center justify-center bg-white border px-4 py-2 rounded-md"
-                onClick={handleDelete}
+                className="flex items-center justify-center bg-white border px-4 py-2 rounded-md text-red-500 hover:text-red-600"
+                onClick={showDeleteConfirm}
               >
                 <RiDeleteBack2Line className="mr-2" />
                 Delete parking

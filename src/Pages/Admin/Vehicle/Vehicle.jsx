@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Table, Empty, Modal, Form, Input, notification } from "antd";
 import { RiDeleteBack2Line } from "react-icons/ri";
-import { SearchOutlined } from "@ant-design/icons";
+import { SearchOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 import {
   fetchVehicles,
   createVehicle,
@@ -149,7 +149,7 @@ const VehicleManagement = () => {
     setIsModalOpen(true);
   };
 
-  const handleDelete = async () => {
+  const showDeleteConfirm = () => {
     if (selectedRowKeys.length === 0) {
       notification.warning({
         message: "Warning",
@@ -158,22 +158,32 @@ const VehicleManagement = () => {
       return;
     }
 
-    try {
-      await Promise.all(
-        selectedRowKeys.map((id) => dispatch(deleteVehicle(id)))
-      );
-      notification.success({
-        message: "Success",
-        description: "Vehicles deleted successfully",
-      });
-      setSelectedRowKeys([]);
-      dispatch(fetchVehicles());
-    } catch (error) {
-      notification.error({
-        message: "Error",
-        description: error.message || "Failed to delete vehicles",
-      });
-    }
+    Modal.confirm({
+      title: "Are you sure you want to delete these vehicle(s)?",
+      icon: <ExclamationCircleOutlined />,
+      content: `You are about to delete ${selectedRowKeys.length} vehicle(s). This action cannot be undone.`,
+      okText: "Yes, delete",
+      okType: "danger",
+      cancelText: "No, cancel",
+      onOk: async () => {
+        try {
+          await Promise.all(
+            selectedRowKeys.map((id) => dispatch(deleteVehicle(id)))
+          );
+          notification.success({
+            message: "Success",
+            description: "Vehicle(s) deleted successfully",
+          });
+          setSelectedRowKeys([]);
+          dispatch(fetchVehicles());
+        } catch (error) {
+          notification.error({
+            message: "Error",
+            description: error.message || "Failed to delete vehicles",
+          });
+        }
+      },
+    });
   };
 
   const rowSelection = {
@@ -209,8 +219,8 @@ const VehicleManagement = () => {
                 Add Vehicle
               </button>
               <button
-                className="flex items-center justify-center bg-white border px-4 py-2 rounded-md"
-                onClick={handleDelete}
+                className="flex items-center justify-center bg-white border px-4 py-2 rounded-md text-red-500 hover:text-red-600"
+                onClick={showDeleteConfirm}
               >
                 <RiDeleteBack2Line className="mr-2" />
                 Delete vehicle

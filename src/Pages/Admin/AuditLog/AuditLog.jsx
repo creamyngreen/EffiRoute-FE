@@ -1,6 +1,14 @@
-import React, { useState } from "react";
-import { Table, Empty } from "antd";
+/* eslint-disable react-hooks/exhaustive-deps */
+import { useState, useEffect } from "react";
+import { Table, Empty, Input, message, Popconfirm } from "antd";
 import { RiExpandUpDownFill } from "react-icons/ri";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchAuditLogs,
+  deleteAuditLog,
+} from "../../../redux/action/auditlogAction";
+import { DeleteOutlined } from "@ant-design/icons";
+
 const CustomEmpty = () => (
   <div className="flex flex-col items-center justify-center py-8">
     <Empty
@@ -16,59 +24,92 @@ const CustomEmpty = () => (
 );
 
 const AuditLog = () => {
-  const [logs, setLogs] = useState([
-
-    {
-      action: "Create",
-      userId: "User1",
-      affectedEntity: "Supplier",
-      entityId: 1,
-      timestamp: new Date().toLocaleString(),
-    },
-    {
-      action: "Update",
-      userId: "User2",
-      affectedEntity: "Supplier",
-      entityId: 2,
-      timestamp: new Date().toLocaleString(),
-    },
-  ]);
+  const dispatch = useDispatch();
+  const { auditLogs, loading } = useSelector((state) => state.auditlog);
 
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [pageSize, setPageSize] = useState(10);
+  const [searchText, setSearchText] = useState("");
+
+  useEffect(() => {
+    fetchLogs();
+  }, [dispatch]);
+
+  const fetchLogs = async () => {
+    try {
+      await dispatch(fetchAuditLogs());
+    } catch (error) {
+      console.log(error);
+      message.error("Failed to fetch audit logs");
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await dispatch(deleteAuditLog(id));
+      message.success("Audit log deleted successfully");
+      setSelectedRowKeys(selectedRowKeys.filter((key) => key !== id));
+    } catch (error) {
+      console.log(error);
+      message.error("Failed to delete audit log");
+    }
+  };
+
+  // Filter logs based on search text
+  const filteredLogs = auditLogs.filter((log) =>
+    Object.values(log).some((value) =>
+      value?.toString().toLowerCase().includes(searchText.toLowerCase())
+    )
+  );
 
   const columns = [
     {
-      title: "Action",
-      dataIndex: "action",
-      sorter: (a, b) => a.action.localeCompare(b.action),
+      title: "ID",
+      dataIndex: "id",
+      sorter: (a, b) => a.id.localeCompare(b.id),
     },
     {
-      title: "User ID",
-      dataIndex: "userId",
-      sorter: (a, b) => a.userId.localeCompare(b.userId),
+      title: "User id",
+      dataIndex: "user_id",
+      sorter: (a, b) => a.user_id.localeCompare(b.user_id),
     },
     {
-      title: "Affected Entity",
-      dataIndex: "affectedEntity",
-      sorter: (a, b) => a.affectedEntity.localeCompare(b.affectedEntity),
+      title: "User",
+      dataIndex: ["user", "username"],
+      sorter: (a, b) => a.user?.username.localeCompare(b.user?.username),
     },
     {
-      title: "Entity ID",
-      dataIndex: "entityId",
-      sorter: (a, b) => a.entityId - b.entityId,
+      title: "Activity",
+      dataIndex: "activity",
+      sorter: (a, b) => a.activity.localeCompare(b.activity),
+    },
+
+    {
+      title: "URL",
+      dataIndex: "url",
+      sorter: (a, b) => a.url.localeCompare(b.url),
     },
     {
-      title: "Time Stamp",
-      dataIndex: "timestamp",
-      sorter: (a, b) => new Date(a.timestamp) - new Date(b.timestamp),
+      title: "Created At",
+      dataIndex: "createdAt",
+      sorter: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
+      render: (text) => new Date(text).toLocaleString(),
+    },
+    {
+      title: "Actions",
+      key: "actions",
+      render: (_, record) => (
+        <Popconfirm
+          title="Are you sure you want to delete this log?"
+          onConfirm={() => handleDelete(record.id)}
+          okText="Yes"
+          cancelText="No"
+        >
+          <DeleteOutlined className="text-red-500 cursor-pointer" />
+        </Popconfirm>
+      ),
     },
   ];
-
-  const tableData = logs.map((log, index) => ({
-    key: index,
-    ...log,
-  }));
 
   const handleRowsChange = (e) => {
     setPageSize(Number(e.target.value));
@@ -78,15 +119,21 @@ const AuditLog = () => {
     <div className="flex h-screen font-nunito">
       <div className="flex-1 flex flex-col">
         <div className="p-6 flex-grow">
-          {/* Audit Logs Summary */}
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-            <span>Selected Audit Logs: {selectedRowKeys.length}</span>
+          {/* Search and Summary */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
+            <Input.Search
+              placeholder="Search audit logs..."
+              onChange={(e) => setSearchText(e.target.value)}
+              className="max-w-xs"
+            />
+            <span>Selected: {selectedRowKeys.length}</span>
             <span className="text-gray-400">|</span>
-            <span>Total Audit Logs: {logs.length || 0}</span>
+            <span>Total: {filteredLogs.length || 0}</span>
             <div className="relative inline-flex items-center">
               <select
                 className="border border-gray-300 text-sm px-4 py-2 pr-8 rounded-md focus:outline-none appearance-none"
                 onChange={handleRowsChange}
+                value={pageSize}
               >
                 <option value={10}>View 10 at a time</option>
                 <option value={20}>View 20 at a time</option>
@@ -97,19 +144,15 @@ const AuditLog = () => {
               <RiExpandUpDownFill className="absolute right-2 pointer-events-none text-gray-500" />
             </div>
           </div>
+
           {/* Audit Logs Table */}
           <div className="overflow-x-auto mb-6">
             <Table
               columns={columns}
-              dataSource={tableData}
+              dataSource={filteredLogs}
               pagination={{ pageSize: pageSize }}
-              rowKey="key"
-              rowSelection={{
-                selectedRowKeys,
-                onChange: (selectedRowKeys) => {
-                  setSelectedRowKeys(selectedRowKeys);
-                },
-              }}
+              rowKey="id"
+              loading={loading}
               locale={{ emptyText: <CustomEmpty /> }}
             />
           </div>
